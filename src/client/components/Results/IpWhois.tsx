@@ -26,7 +26,7 @@ const IpWhoisCard = (props: { data: any; title: string; actionButtons: any }): J
       {rows.map((r) => (
         <Row lbl={r.lbl} val={`${r.val}`} href={r.href} key={r.lbl} />
       ))}
-      {cidr.length > 0 && <ListRow title="CIDR Blocks" list={cidr} />}
+      {cidr.length > 0 && <ListRow title="CIDR Blocks" list={cidr} href={prefixUrl} />}
       {status.length > 0 && <ListRow title="Status" list={status} />}
     </Card>
   );

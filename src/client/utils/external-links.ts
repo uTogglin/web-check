@@ -34,14 +34,27 @@ export const sslLabsUrl = (domain: string): string =>
 export const searchUrl = (query: string): string =>
   `https://duckduckgo.com/?q=${encodeURIComponent(query.trim())}`;
 
-/** Browse to a hostname/domain over https (protocol stripped if already present). */
+/** Browse to a hostname/domain over https (protocol and trailing dots/slashes stripped). */
 export const siteUrl = (host: string): string => {
   const clean = host
     .trim()
     .replace(/^https?:\/\//i, '')
-    .replace(/\/+$/, '');
+    .replace(/[./]+$/, '');
   return `https://${clean}`;
 };
+
+/** True for a bare IPv4 or IPv6 address. */
+export const isIpAddress = (val: string): boolean => {
+  const v = val.trim();
+  return /^(\d{1,3}\.){3}\d{1,3}$/.test(v) || /^[0-9a-f]*:[0-9a-f:]+$/i.test(v);
+};
+
+/**
+ * Best link for a bare host identifier: IP addresses resolve to their bgp.tools
+ * prefix, everything else (hostnames, domains) opens over https.
+ */
+export const hostUrl = (val: string): string =>
+  isIpAddress(val) ? ipUrl(val) : siteUrl(val);
 
 /** True for a value that is already a full http(s) URL. */
 export const isHttpUrl = (val: string): boolean => /^https?:\/\/\S+$/i.test(val.trim());

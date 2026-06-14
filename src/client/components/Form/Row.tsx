@@ -266,8 +266,13 @@ export const ExpandableRow = (props: RowProps) => {
   );
 };
 
-export const ListRow = (props: { list: string[]; title: string }) => {
-  const { list, title } = props;
+export const ListRow = (props: {
+  list: string[];
+  title: string;
+  /** When set, each entry becomes a link to the URL this returns for it. */
+  href?: (entry: string) => string;
+}) => {
+  const { list, title, href } = props;
   return (
     <>
       <Heading as="h4" size="small" align="left" color={colors.primary}>
@@ -276,7 +281,7 @@ export const ListRow = (props: { list: string[]; title: string }) => {
       {list.map((entry: string, index: number) => {
         return (
           <Row lbl="" val="" key={`${entry}-${title.toLocaleLowerCase()}-${index}`}>
-            <span>{entry}</span>
+            {href ? <ExternalLink href={href(entry)}>{entry}</ExternalLink> : <span>{entry}</span>}
           </Row>
         );
       })}

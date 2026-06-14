@@ -2,6 +2,7 @@ import { Card } from 'client/components/Form/Card';
 import Heading from 'client/components/Form/Heading';
 import Row from 'client/components/Form/Row';
 import colors from 'client/styles/colors';
+import { siteUrl, ipUrl } from 'client/utils/external-links';
 
 const DnsServerCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
   const dnsSecurity = props.data;
@@ -15,8 +16,15 @@ const DnsServerCard = (props: { data: any; title: string; actionButtons: any }):
                 DNS Server #{index + 1}
               </Heading>
             )}
-            <Row lbl="Hostname" val={dns.hostname} key={`host-${index}`} />
-            {dns.address && <Row lbl="IP Address" val={dns.address} key={`ip-${index}`} />}
+            <Row
+              lbl="Hostname"
+              val={dns.hostname}
+              href={dns.hostname ? siteUrl(dns.hostname) : undefined}
+              key={`host-${index}`}
+            />
+            {dns.address && (
+              <Row lbl="IP Address" val={dns.address} href={ipUrl(dns.address)} key={`ip-${index}`} />
+            )}
           </div>
         );
       })}

@@ -1,6 +1,11 @@
 import styled from '@emotion/styled';
 import colors from 'client/styles/colors';
 import { Card } from 'client/components/Form/Card';
+import { hostUrl, isIpAddress } from 'client/utils/external-links';
+
+// A hop is linkable when it's a real IP or a dotted hostname — not a "*" timeout
+const isLinkableHop = (hop: string): boolean =>
+  isIpAddress(hop) || (hop.includes('.') && !hop.includes('*'));
 
 const RouteRow = styled.div`
   text-align: center;
@@ -39,20 +44,36 @@ const TraceRouteCard = (props: { data: any; title: string; actionButtons: any })
     <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
       {routes
         .filter((x: any) => x)
-        .map((route: any, index: number) => (
+        .map((route: any, index: number) => {
+          const hop = Object.keys(route)[0];
+          return (
           <RouteRow key={index}>
-            <span className="ipName">{Object.keys(route)[0]}</span>
+            <span className="ipName">
+              {isLinkableHop(hop) ? (
+                <a
+                  href={hostUrl(hop)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: colors.primary, textDecoration: 'none' }}
+                >
+                  {hop}
+                </a>
+              ) : (
+                hop
+              )}
+            </span>
             <RouteTimings>
-              {route[Object.keys(route)[0]].map((time: any, packetIndex: number) => (
+              {route[hop].map((time: any, packetIndex: number) => (
                 <p className="times" key={`timing-${packetIndex}-${time}`}>
-                  {route[Object.keys(route)[0]].length > 1 && <>Packet #{packetIndex + 1}:</>}
+                  {route[hop].length > 1 && <>Packet #{packetIndex + 1}:</>}
                   Took {time} ms
                 </p>
               ))}
               <p className="arrow">↓</p>
             </RouteTimings>
           </RouteRow>
-        ))}
+          );
+        })}
       <RouteTimings>
         <p className="completed">Round trip completed in {traceRouteResponse.timeTaken} ms</p>
       </RouteTimings>

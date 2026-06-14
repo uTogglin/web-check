@@ -1,5 +1,6 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { ListRow } from 'client/components/Form/Row';
+import { ipUrl, siteUrl } from 'client/utils/external-links';
 
 const styles = `
   grid-row: span 2;
@@ -20,12 +21,12 @@ const DnsRecordsCard = (props: { data: any; title: string; actionButtons: any })
   return (
     <Card heading={props.title} actionButtons={props.actionButtons} styles={styles}>
       <div className="content">
-        {dns.A?.length > 0 && <ListRow title="A" list={dns.A} />}
-        {dns.AAAA?.length > 0 && <ListRow title="AAAA" list={dns.AAAA} />}
+        {dns.A?.length > 0 && <ListRow title="A" list={dns.A} href={ipUrl} />}
+        {dns.AAAA?.length > 0 && <ListRow title="AAAA" list={dns.AAAA} href={ipUrl} />}
         {mx.length > 0 && <ListRow title="MX" list={mx} />}
-        {dns.CNAME?.length > 0 && <ListRow title="CNAME" list={dns.CNAME} />}
-        {dns.NS?.length > 0 && <ListRow title="NS" list={dns.NS} />}
-        {dns.PTR?.length > 0 && <ListRow title="PTR" list={dns.PTR} />}
+        {dns.CNAME?.length > 0 && <ListRow title="CNAME" list={dns.CNAME} href={siteUrl} />}
+        {dns.NS?.length > 0 && <ListRow title="NS" list={dns.NS} href={siteUrl} />}
+        {dns.PTR?.length > 0 && <ListRow title="PTR" list={dns.PTR} href={siteUrl} />}
         {soa.length > 0 && <ListRow title="SOA" list={soa} />}
         {dns.SRV?.length > 0 && (
           <ListRow
