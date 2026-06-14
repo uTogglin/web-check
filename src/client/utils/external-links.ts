@@ -19,16 +19,20 @@ export const ipUrl = (ip: string): string => `${BGP}/search?q=${encodeURICompone
 /** Detail page for a routed prefix / CIDR block, e.g. 8.8.8.0/24 -> /prefix/8.8.8.0/24 */
 export const prefixUrl = (cidr: string): string => `${BGP}/prefix/${cidr.trim()}`;
 
-/** crt.sh certificate-transparency search — used for issuer org names. */
-export const crtShUrl = (query: string): string =>
-  `https://crt.sh/?q=${encodeURIComponent(query.trim())}`;
-
 /**
  * Qualys SSL Labs report for a domain — the cert's live detail view.
  * Rock-solid uptime and no login, unlike the CT-search engines.
  */
 export const sslLabsUrl = (domain: string): string =>
   `https://www.ssllabs.com/ssltest/analyze.html?d=${encodeURIComponent(domain.trim())}`;
+
+/**
+ * Web search for an issuer / CA org name. No purpose-built issuer-org search is
+ * reliably available without a login (crt.sh is the only one and it's flaky),
+ * so a search engine is the dependable "who is this CA" fallback.
+ */
+export const searchUrl = (query: string): string =>
+  `https://duckduckgo.com/?q=${encodeURIComponent(query.trim())}`;
 
 /** Browse to a hostname/domain over https (protocol stripped if already present). */
 export const siteUrl = (host: string): string => {

@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import colors from 'client/styles/colors';
 import { Card } from 'client/components/Form/Card';
 import Heading from 'client/components/Form/Heading';
-import { crtShUrl, sslLabsUrl } from 'client/utils/external-links';
+import { searchUrl, sslLabsUrl } from 'client/utils/external-links';
 
 const Row = styled.div`
   display: flex;
@@ -116,7 +116,7 @@ const SslCertCard = (props: { data: any; title: string; actionButtons: any }): J
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       {subject?.CN && <DataRow lbl="Subject" val={subject.CN} href={sslLabsUrl(subject.CN)} />}
-      {issuer?.O && <DataRow lbl="Issuer" val={issuer.O} href={crtShUrl(issuer.O)} />}
+      {issuer?.O && <DataRow lbl="Issuer" val={issuer.O} href={searchUrl(issuer.O)} />}
       {typeof sslCert.isValid === 'boolean' && (
         <DataRow lbl="Trusted" val={sslCert.isValid ? '✅ Yes' : `❌ No (${sslCert.authError})`} />
       )}
