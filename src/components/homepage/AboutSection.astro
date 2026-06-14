@@ -1,7 +1,6 @@
 ---
 import ButtonGroup from '@components/homepage/ButtonGroup.astro';
 import Features from '@components/homepage/Features.astro';
-import SponsorSegment from '@components/homepage/SponsorSegment.astro';
 
 const supportedChecks = [
   'Archive History',
@@ -45,18 +44,6 @@ const links = [
     icon: 'github',
     isCta: true,
   },
-  {
-    title: 'Deploy your Own',
-    url: '/self-hosted-setup',
-    icon: 'rocket',
-    isCta: false,
-  },
-  {
-    title: 'Use the API',
-    url: '/web-check-api',
-    icon: 'code',
-    isCta: false,
-  },
 ];
 ---
 
@@ -71,8 +58,6 @@ const links = [
   <hr />
   <Features supportedChecks={supportedChecks} />
   <ButtonGroup links={links} />
-  <hr />
-  <SponsorSegment />
 </div>
 
 <style lang="scss">
