@@ -38,9 +38,7 @@ const TechStackRow = styled.div`
   .tech-categories {
     font-size: 0.8rem;
     opacity: 0.5;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+    overflow-wrap: anywhere;
     flex: 1;
     text-align: right;
   }
@@ -52,14 +50,7 @@ const TechStackRow = styled.div`
     font-size: 0.8rem;
     margin: 0.25rem 0;
     font-style: italic;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    &.tech-website {
-      -webkit-line-clamp: 1;
-    }
+    overflow-wrap: anywhere;
     a {
       color: ${colors.primary};
       opacity: 0.75;
@@ -119,7 +110,10 @@ const TechStackCard = (props: { data: any; title: string; actionButtons: any }):
               <div>
                 <p className="tech-description">{tech.description}</p>
                 <p className="tech-website">
-                  Learn more at: <a href={tech.website}>{tech.website}</a>
+                  Learn more at:{' '}
+                  <a href={tech.website} target="_blank" rel="noopener noreferrer">
+                    {tech.website}
+                  </a>
                 </p>
               </div>
             </div>

@@ -3,6 +3,7 @@ import { Card } from 'client/components/Form/Card';
 import Row from 'client/components/Form/Row';
 import Heading from 'client/components/Form/Heading';
 import colors from 'client/styles/colors';
+import { siteUrl } from 'client/utils/external-links';
 
 const CATEGORY_LABELS: Record<string, string> = {
   analytics: 'Analytics',
@@ -71,16 +72,20 @@ const DomainRow = styled.div`
   }
   .domain {
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    a {
+      color: inherit;
+      text-decoration: none;
+      &:hover {
+        color: ${colors.primary};
+        text-decoration: underline;
+      }
+    }
   }
   .provider {
     font-size: 0.75rem;
     color: ${colors.textColorSecondary};
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
   }
   .badge {
     font-size: 0.7rem;
@@ -155,7 +160,11 @@ const ThirdPartyCard = (props: { data: any; title: string; actionButtons: any })
                 onError={onLogoError}
               />
               <div className="info">
-                <span className="domain">{dom.domain}</span>
+                <span className="domain">
+                  <a href={siteUrl(dom.domain)} target="_blank" rel="noopener noreferrer">
+                    {dom.domain}
+                  </a>
+                </span>
                 <span className="provider">{dom.provider || 'Unknown service'}</span>
               </div>
               <span className="badge" style={{ color: catColor(dom.category) }}>

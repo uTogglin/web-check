@@ -3,6 +3,7 @@ import type { HostNames } from 'client/utils/result-processor';
 import colors from 'client/styles/colors';
 import { Card } from 'client/components/Form/Card';
 import Heading from 'client/components/Form/Heading';
+import { siteUrl } from 'client/utils/external-links';
 
 const Row = styled.div`
   display: flex;
@@ -13,6 +14,16 @@ const Row = styled.div`
   }
   span:first-child {
     font-weight: bold;
+    overflow-wrap: anywhere;
+  }
+  a {
+    color: ${colors.textColor};
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    &:hover {
+      color: ${colors.primary};
+      text-decoration: underline;
+    }
   }
 `;
 
@@ -26,7 +37,9 @@ const HostListSection = (props: { list: string[]; title: string }) => {
       {list.map((entry: string, index: number) => {
         return (
           <Row key={`${title.toLocaleLowerCase()}-${index}`}>
-            <span>{entry}</span>
+            <a href={siteUrl(entry)} target="_blank" rel="noopener noreferrer">
+              {entry}
+            </a>
           </Row>
         );
       })}

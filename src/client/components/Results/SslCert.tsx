@@ -2,22 +2,32 @@ import styled from '@emotion/styled';
 import colors from 'client/styles/colors';
 import { Card } from 'client/components/Form/Card';
 import Heading from 'client/components/Form/Heading';
+import { crtShUrl } from 'client/utils/external-links';
 
 const Row = styled.div`
   display: flex;
   justify-content: space-between;
+  gap: 1rem;
   padding: 0.25rem;
   &:not(:last-child) {
     border-bottom: 1px solid ${colors.primaryTransparent};
   }
   span.lbl {
     font-weight: bold;
+    white-space: nowrap;
   }
   span.val {
     max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    text-align: right;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    a {
+      color: ${colors.primary};
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 `;
 
@@ -31,13 +41,19 @@ const formatDate = (dateString: string): string => {
   return formatter.format(date);
 };
 
-const DataRow = (props: { lbl: string; val: string }) => {
-  const { lbl, val } = props;
+const DataRow = (props: { lbl: string; val: string; href?: string }) => {
+  const { lbl, val, href } = props;
   return (
     <Row>
       <span className="lbl">{lbl}</span>
       <span className="val" title={val}>
-        {val}
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            {val}
+          </a>
+        ) : (
+          val
+        )}
       </span>
     </Row>
   );
@@ -99,8 +115,8 @@ const SslCertCard = (props: { data: any; title: string; actionButtons: any }): J
   } = sslCert;
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      {subject && <DataRow lbl="Subject" val={subject?.CN} />}
-      {issuer?.O && <DataRow lbl="Issuer" val={issuer.O} />}
+      {subject?.CN && <DataRow lbl="Subject" val={subject.CN} href={crtShUrl(subject.CN)} />}
+      {issuer?.O && <DataRow lbl="Issuer" val={issuer.O} href={crtShUrl(issuer.O)} />}
       {typeof sslCert.isValid === 'boolean' && (
         <DataRow lbl="Trusted" val={sslCert.isValid ? '✅ Yes' : `❌ No (${sslCert.authError})`} />
       )}

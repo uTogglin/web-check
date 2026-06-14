@@ -45,7 +45,13 @@ const SocialTagsCard = (props: { data: any; title: string; actionButtons: any })
         <Row lbl="" val="">
           <span className="lbl">Twitter Site</span>
           <span className="val">
-            <a href={`https://x.com/${tags.twitterSite}`}>{tags.twitterSite}</a>
+            <a
+              href={`https://x.com/${tags.twitterSite.replace(/^@/, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {tags.twitterSite}
+            </a>
           </span>
         </Row>
       )}

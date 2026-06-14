@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { Card } from 'client/components/Form/Card';
 import colors from 'client/styles/colors';
+import { asnUrl, prefixUrl } from 'client/utils/external-links';
 
 const cardStyles = `small { opacity: 0.6; display: block; margin-bottom: 0.5rem; }`;
 
@@ -20,9 +21,7 @@ const AsnRow = styled.div`
   .holder {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
   .region {
     font-size: 0.75rem;
@@ -87,7 +86,7 @@ const OrgAsnsCard = (props: { data: any; title: string; actionButtons: any }): J
             <AsnRow key={`org-asn-${a.asn}-${i}`} title={a.handle || ''}>
               <span className="asn">
                 <a
-                  href={`https://stat.ripe.net/AS${a.asn}`}
+                  href={asnUrl(a.asn)}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: colors.primary }}
@@ -113,7 +112,16 @@ const OrgAsnsCard = (props: { data: any; title: string; actionButtons: any }): J
           </small>
           {netList.map((n, i) => (
             <AsnRow key={`org-net-${n.range}-${i}`} title={n.descr || n.type}>
-              <span className="asn">{n.range}</span>
+              <span className="asn">
+                <a
+                  href={prefixUrl(n.range)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: colors.primary }}
+                >
+                  {n.range}
+                </a>
+              </span>
               <span className="holder">{n.netname || n.descr || '—'}</span>
               <span className="region">{n.type}</span>
             </AsnRow>

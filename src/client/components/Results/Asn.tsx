@@ -2,10 +2,15 @@ import { Card } from 'client/components/Form/Card';
 import Row, { ExpandableRow, type RowProps } from 'client/components/Form/Row';
 import Heading from 'client/components/Form/Heading';
 import colors from 'client/styles/colors';
+import { asnUrl, ipUrl, prefixUrl } from 'client/utils/external-links';
 
 // Each neighbour is { asn, power } — power = how many route collectors observe it
 const asnRows = (list: any[]): RowProps[] =>
-  list.map((a) => ({ lbl: `AS${a.asn}`, val: a.power ? `${a.power}×` : ' ' }));
+  list.map((a) => ({
+    lbl: `AS${a.asn}`,
+    lblHref: asnUrl(a.asn),
+    val: a.power ? `${a.power}×` : ' ',
+  }));
 
 const countLabel = (group: any) =>
   `${group?.count ?? 0}${group?.truncated ? ` (showing ${group.list.length})` : ''}`;
@@ -18,10 +23,14 @@ const AsnCard = (props: { data: any; title: string; actionButtons: any }): JSX.E
   const downstreams = d?.downstreams ?? { count: 0, list: [] };
   const prefixes = d?.announcedPrefixes ?? { count: 0, list: [] };
 
-  const summary = [
-    { lbl: 'IP Address', val: d?.ip },
-    { lbl: 'Routed Prefix', val: d?.prefix },
-    { lbl: 'ASN', val: asn.number ? `AS${asn.number}` : null },
+  const summary: { lbl: string; val: any; href?: string }[] = [
+    { lbl: 'IP Address', val: d?.ip, href: d?.ip ? ipUrl(d.ip) : undefined },
+    { lbl: 'Routed Prefix', val: d?.prefix, href: d?.prefix ? prefixUrl(d.prefix) : undefined },
+    {
+      lbl: 'ASN',
+      val: asn.number ? `AS${asn.number}` : null,
+      href: asn.number ? asnUrl(asn.number) : undefined,
+    },
     { lbl: 'Network', val: asn.holder },
     { lbl: 'Allocation', val: asn.block },
   ].filter((r) => r.val);
@@ -29,7 +38,7 @@ const AsnCard = (props: { data: any; title: string; actionButtons: any }): JSX.E
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       {summary.map((r) => (
-        <Row lbl={r.lbl} val={`${r.val}`} key={r.lbl} />
+        <Row lbl={r.lbl} val={`${r.val}`} href={r.href} key={r.lbl} />
       ))}
       {Array.isArray(d?.asns) && d.asns.length > 1 && (
         <Row lbl="Origin ASNs" val={d.asns.map((a: any) => `AS${a}`).join(', ')} />
@@ -60,7 +69,11 @@ const AsnCard = (props: { data: any; title: string; actionButtons: any }): JSX.E
       <ExpandableRow
         lbl="Announced Prefixes"
         val={`${(prefixes.v4Count ?? 0) + (prefixes.v6Count ?? 0)} (${prefixes.v4Count ?? 0} v4 / ${prefixes.v6Count ?? 0} v6)`}
-        rowList={(prefixes.list || []).map((p: string) => ({ lbl: p, val: ' ' }))}
+        rowList={(prefixes.list || []).map((p: string) => ({
+          lbl: p,
+          lblHref: prefixUrl(p),
+          val: ' ',
+        }))}
         title="All IP ranges this AS advertises to the global routing table"
       />
     </Card>

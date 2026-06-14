@@ -1,6 +1,7 @@
 import type { ServerInfo } from 'client/utils/result-processor';
 import { Card } from 'client/components/Form/Card';
 import Row from 'client/components/Form/Row';
+import { asnUrl, ipUrl } from 'client/utils/external-links';
 
 const ServerInfoCard = (props: {
   data: ServerInfo;
@@ -14,9 +15,9 @@ const ServerInfoCard = (props: {
       {org && <Row lbl="Organization" val={org} />}
       {isp && isp !== org && <Row lbl="Service Provider" val={isp} />}
       {os && <Row lbl="Operating System" val={os} />}
-      {asn && <Row lbl="ASN Code" val={asn} />}
+      {asn && <Row lbl="ASN Code" val={asn} href={asnUrl(asn)} />}
       {ports && <Row lbl="Ports" val={ports} />}
-      {ip && <Row lbl="IP" val={ip} />}
+      {ip && <Row lbl="IP" val={ip} href={ipUrl(ip)} />}
       {type && <Row lbl="Type" val={type} />}
       {loc && <Row lbl="Location" val={loc} />}
     </Card>

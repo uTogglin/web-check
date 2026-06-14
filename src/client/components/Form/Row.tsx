@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import styled from '@emotion/styled';
 import colors from 'client/styles/colors';
 import Heading from 'client/components/Form/Heading';
+import { isHttpUrl, isEmail } from 'client/utils/external-links';
 
 export interface RowProps {
   lbl: string;
@@ -13,6 +14,10 @@ export interface RowProps {
   open?: boolean;
   plaintext?: string;
   listResults?: string[];
+  /** When set, render the value as a link to this URL (opens in a new tab). */
+  href?: string;
+  /** When set, render the label as a link to this URL (opens in a new tab). */
+  lblHref?: string;
 }
 
 export const StyledRow = styled.div`
@@ -35,18 +40,23 @@ export const StyledRow = styled.div`
     font-weight: 500;
     flex: 1 1 auto;
     min-width: 6rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    a {
+      color: ${colors.primary};
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
   span.val {
     color: ${colors.textColor};
     font-weight: 500;
     text-align: right;
-    max-width: 16rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-width: 18rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     cursor: default;
     a {
       color: ${colors.primary};
@@ -179,6 +189,30 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
 };
 
+const ExternalLink = ({ href, children }: { href: string; children: ReactNode }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+    {children}
+  </a>
+);
+
+// Render a value: an explicit href wins; otherwise auto-link bare URLs and emails
+// so any address in any card becomes clickable without per-card wiring.
+const renderVal = (val: any, href?: string): ReactNode => {
+  const formatted = formatValue(val);
+  if (href) return <ExternalLink href={href}>{formatted}</ExternalLink>;
+  if (typeof formatted === 'string') {
+    if (isHttpUrl(formatted)) return <ExternalLink href={formatted}>{formatted}</ExternalLink>;
+    if (isEmail(formatted)) {
+      return (
+        <a href={`mailto:${formatted}`} onClick={(e) => e.stopPropagation()}>
+          {formatted}
+        </a>
+      );
+    }
+  }
+  return formatted;
+};
+
 const snip = (text: string, length: number = 80) => {
   if (text.length < length) return text;
   return `${text.substring(0, length)}...`;
@@ -202,14 +236,18 @@ export const ExpandableRow = (props: RowProps) => {
             return (
               <StyledRow as="li" key={`${row.lbl}-${index}`}>
                 <span className="lbl" title={row.title?.toString()}>
-                  {row.lbl}
+                  {row.lblHref ? (
+                    <ExternalLink href={row.lblHref}>{row.lbl}</ExternalLink>
+                  ) : (
+                    row.lbl
+                  )}
                 </span>
                 <span
                   className="val"
                   title={row.val?.toString()}
-                  onClick={() => copyToClipboard(row.val)}
+                  onClick={row.href ? undefined : () => copyToClipboard(row.val)}
                 >
-                  {formatValue(row.val)}
+                  {renderVal(row.val, row.href)}
                 </span>
                 {row.plaintext && <PlainText>{row.plaintext}</PlainText>}
                 {row.listResults && (
@@ -247,17 +285,21 @@ export const ListRow = (props: { list: string[]; title: string }) => {
 };
 
 const Row = (props: RowProps) => {
-  const { lbl, val, title, plaintext, listResults, children } = props;
+  const { lbl, val, title, plaintext, listResults, children, href, lblHref } = props;
   if (children) return <StyledRow key={`${lbl}-${val}`}>{children}</StyledRow>;
   return (
     <StyledRow key={`${lbl}-${val}`}>
       {lbl && (
         <span className="lbl" title={title?.toString()}>
-          {lbl}
+          {lblHref ? <ExternalLink href={lblHref}>{lbl}</ExternalLink> : lbl}
         </span>
       )}
-      <span className="val" title={val?.toString()} onClick={() => copyToClipboard(val)}>
-        {formatValue(val)}
+      <span
+        className="val"
+        title={val?.toString()}
+        onClick={href ? undefined : () => copyToClipboard(val)}
+      >
+        {renderVal(val, href)}
       </span>
       {plaintext && <PlainText>{plaintext}</PlainText>}
       {listResults && (

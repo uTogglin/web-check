@@ -20,9 +20,8 @@ const Row = styled.div`
   }
   span.val {
     max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 `;
 
