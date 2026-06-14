@@ -23,9 +23,12 @@ export const prefixUrl = (cidr: string): string => `${BGP}/prefix/${cidr.trim()}
 export const crtShUrl = (query: string): string =>
   `https://crt.sh/?q=${encodeURIComponent(query.trim())}`;
 
-/** merklemap cert/subdomain search — a modern, no-login domain explorer. */
-export const merklemapUrl = (domain: string): string =>
-  `https://www.merklemap.com/search?query=${encodeURIComponent(domain.trim())}`;
+/**
+ * Qualys SSL Labs report for a domain — the cert's live detail view.
+ * Rock-solid uptime and no login, unlike the CT-search engines.
+ */
+export const sslLabsUrl = (domain: string): string =>
+  `https://www.ssllabs.com/ssltest/analyze.html?d=${encodeURIComponent(domain.trim())}`;
 
 /** Browse to a hostname/domain over https (protocol stripped if already present). */
 export const siteUrl = (host: string): string => {
