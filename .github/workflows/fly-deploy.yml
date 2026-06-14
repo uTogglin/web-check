@@ -1,0 +1,45 @@
+name: 🚀 Deploy API to Fly.io
+
+# Continuous deployment for the Fly.io app (the API + server.js). Runs on pushes
+# that touch the server/API/runtime config, and applies fly.toml — including the
+# [env] block (DISABLE_GUI, API_CORS_ORIGIN). The frontend is deployed separately
+# to GitHub Pages (see pages.yml).
+#
+# REQUIRES a one-time repo secret FLY_API_TOKEN:
+#   fly tokens create deploy -a your-web-check-app
+#   gh secret set FLY_API_TOKEN --repo uTogglin/web-check
+# (or add it under Settings → Secrets and variables → Actions). Until that secret
+# exists, runs will fail at the deploy step — trigger manually once it's set.
+
+on:
+  push:
+    branches: ['master']
+    paths:
+      - 'api/**'
+      - 'server.js'
+      - 'fly.toml'
+      - 'Dockerfile'
+      - 'package.json'
+      - 'yarn.lock'
+      - '.npmrc'
+  workflow_dispatch:
+
+concurrency:
+  group: 'fly-deploy'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: 🚀 Deploy app
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@v6
+
+      - name: 🔧 Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: 🚀 Deploy to Fly
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
