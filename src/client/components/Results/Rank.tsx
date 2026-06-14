@@ -61,7 +61,7 @@ function Chart(chartData: { date: string; uv: number }[], data: any) {
         <Area
           type="monotone"
           dataKey="uv"
-          stroke="#9fef00"
+          stroke={colors.primary}
           fillOpacity={1}
           name="Rank"
           fill={`${colors.backgroundDarker}a1`}

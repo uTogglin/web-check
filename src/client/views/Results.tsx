@@ -20,6 +20,7 @@ import AdditionalResources from 'client/components/misc/AdditionalResources';
 import AdvisoryPanel from 'client/components/misc/AdvisoryPanel';
 import NoResults from 'client/components/misc/NoResults';
 import ResultsMasonryGrid from 'client/components/misc/ResultsMasonryGrid';
+import ResultSection from 'client/components/misc/ResultSection';
 import ViewRaw from 'client/components/misc/ViewRaw';
 
 import { determineAddressType, type AddressType } from 'client/utils/address-type-checker';
@@ -56,6 +57,62 @@ const ResultsContent = styled.section`
   }
 `;
 
+// Group the result cards into collapsible sections. Order here is the display order;
+// any card id not listed falls through to the "Other" section so nothing is hidden.
+const SECTIONS: { id: string; title: string; ids: string[] }[] = [
+  {
+    id: 'server',
+    title: 'Server & Infrastructure',
+    ids: ['status', 'server-info', 'dns-server', 'location', 'ports', 'hosts', 'trace-route', 'carbon'],
+  },
+  {
+    id: 'domain',
+    title: 'Domain & Registration',
+    ids: ['domain', 'whois', 'subdomains', 'archives', 'rank'],
+  },
+  {
+    id: 'dns',
+    title: 'DNS & Email',
+    ids: ['dns', 'dnssec', 'txt-records', 'caa', 'mail-config', 'email-security'],
+  },
+  {
+    id: 'security',
+    title: 'Security',
+    ids: [
+      'http-security',
+      'hsts',
+      'threats',
+      'firewall',
+      'block-lists',
+      'security-txt',
+      'cookies',
+      'headers',
+      'third-party',
+    ],
+  },
+  {
+    id: 'ssl',
+    title: 'SSL / TLS',
+    ids: ['ssl', 'tls-connection', 'tls-security-audit', 'cert-transparency'],
+  },
+  { id: 'network', title: 'Network & Routing', ids: ['ip-whois', 'asn', 'org-asns'] },
+  { id: 'compatibility', title: 'Compatibility & Tech', ids: ['tls-client-compat', 'tech-stack'] },
+  {
+    id: 'content',
+    title: 'SEO & Content',
+    ids: ['social-tags', 'sitemap', 'robots-txt', 'linked-pages', 'redirects', 'quality', 'screenshot'],
+  },
+];
+
+const OTHER_SECTION = 'other';
+
+// cardId -> sectionId lookup, built once
+const CARD_SECTION: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const sec of SECTIONS) for (const id of sec.ids) map[id] = sec.id;
+  return map;
+})();
+
 const makeSiteName = (address: string): string => {
   try {
     const withScheme = /^https?:\/\//i.test(address) ? address : `https://${address}`;
@@ -79,6 +136,8 @@ const Results = (props: { address?: string }): JSX.Element => {
   const [addressType, setAddressType] = useState<AddressType>('empt');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<ReactNode>(<></>);
+  // Sections are open by default; ids land here only when explicitly collapsed
+  const [closedSections, setClosedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (addressType === 'empt') setAddressType(determineAddressType(address));
@@ -138,6 +197,22 @@ const Results = (props: { address?: string }): JSX.Element => {
 
   const cardsToShow = renderable.filter(({ data, entry }) => hasData(data) && !entry?.error);
 
+  // Bucket visible cards into their sections, preserving SECTIONS order; drop empty sections
+  const sectionedCards = [...SECTIONS, { id: OTHER_SECTION, title: 'Other', ids: [] }]
+    .map((sec) => ({
+      ...sec,
+      cards: cardsToShow.filter(({ card }) => (CARD_SECTION[card.id] || OTHER_SECTION) === sec.id),
+    }))
+    .filter((sec) => sec.cards.length > 0);
+
+  const toggleSection = (id: string) =>
+    setClosedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   const findings = useMemo(() => runAnalysis(jobsState), [jobsState]);
 
   // Detect a catastrophic API outage when the bulk of settled jobs error or time out
@@ -161,13 +236,23 @@ const Results = (props: { address?: string }): JSX.Element => {
   }
 
   const jumpToCard = (id: string) => {
-    const el = document.getElementById(`card-${id}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    el.classList.remove('flash');
-    void el.offsetWidth;
-    el.classList.add('flash');
-    window.setTimeout(() => el.classList.remove('flash'), 1300);
+    // Make sure the card's section is expanded before we try to scroll to it
+    const sectionId = CARD_SECTION[id] || OTHER_SECTION;
+    setClosedSections((prev) => {
+      if (!prev.has(sectionId)) return prev;
+      const next = new Set(prev);
+      next.delete(sectionId);
+      return next;
+    });
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`card-${id}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+      window.setTimeout(() => el.classList.remove('flash'), 1300);
+    });
   };
 
   return (
@@ -193,24 +278,35 @@ const Results = (props: { address?: string }): JSX.Element => {
       <Loader show={loadingJobs.filter((j) => j.state !== 'loading').length < 5} />
       <AdvisoryPanel findings={findings} onJumpTo={jumpToCard} />
       <ResultsContent>
-        <ResultsMasonryGrid minColWidth={336}>
-          {cardsToShow.map(({ card, data }) => (
-            <div id={`card-${card.id}`} key={`eb-${card.id}`}>
-              <ErrorBoundary title={card.title}>
-                <card.Component
-                  key={card.id}
-                  data={data}
-                  title={card.title}
-                  actionButtons={makeActionButtons(
-                    card.title,
-                    () => retry(card.id),
-                    () => showInfo(card.id),
-                  )}
-                />
-              </ErrorBoundary>
-            </div>
-          ))}
-        </ResultsMasonryGrid>
+        {sectionedCards.map((section) => (
+          <ResultSection
+            key={section.id}
+            id={section.id}
+            title={section.title}
+            count={section.cards.length}
+            open={!closedSections.has(section.id)}
+            onToggle={() => toggleSection(section.id)}
+          >
+            <ResultsMasonryGrid minColWidth={336}>
+              {section.cards.map(({ card, data }) => (
+                <div id={`card-${card.id}`} key={`eb-${card.id}`}>
+                  <ErrorBoundary title={card.title}>
+                    <card.Component
+                      key={card.id}
+                      data={data}
+                      title={card.title}
+                      actionButtons={makeActionButtons(
+                        card.title,
+                        () => retry(card.id),
+                        () => showInfo(card.id),
+                      )}
+                    />
+                  </ErrorBoundary>
+                </div>
+              ))}
+            </ResultsMasonryGrid>
+          </ResultSection>
+        ))}
       </ResultsContent>
       <ViewRaw
         everything={renderable.map((r) => ({

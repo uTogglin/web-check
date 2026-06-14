@@ -274,8 +274,8 @@ const FancyBackground = (): JSX.Element => {
         oldAttracXY = this.dataXYtoCanvasXY(oldAttracSpot.x, oldAttracSpot.y);
 
       this.ctx.beginPath();
-      this.ctx.strokeStyle = '#9fef00';
-      this.ctx.fillStyle = '#9fef00';
+      this.ctx.strokeStyle = '#7c3aed';
+      this.ctx.fillStyle = '#7c3aed';
 
       // Particle trail
       this.ctx.moveTo(last.x, last.y);
@@ -292,8 +292,8 @@ const FancyBackground = (): JSX.Element => {
       this.ctx.lineTo(attracXY.x, attracXY.y);
       this.ctx.arc(attracXY.x, attracXY.y, 1.5 * this.dataToImageRatio, 0, 2 * Math.PI, false);
 
-      this.ctx.strokeStyle = '#9fef00';
-      this.ctx.fillStyle = '#9fef00';
+      this.ctx.strokeStyle = '#7c3aed';
+      this.ctx.fillStyle = '#7c3aed';
 
       this.ctx.stroke();
       this.ctx.fill();

@@ -1,14 +1,14 @@
 const colors = {
-  primary: '#c1fb41',
-  primaryLighter: '#cff97a',
+  primary: '#7c3aed',
+  primaryLighter: '#a78bfa',
   textColor: '#ffffff',
   textColorSecondary: '#a4b1cd',
   background: '#141517',
   backgroundDarker: '#000000',
   backgroundLighter: '#242525',
   bgShadowColor: '#101010',
-  fgShadowColor: '#3f550e',
-  primaryTransparent: '#9fef0012',
+  fgShadowColor: '#3b0764',
+  primaryTransparent: '#7c3aed12',
 
   // Action Colors
   info: '#04e4f4',

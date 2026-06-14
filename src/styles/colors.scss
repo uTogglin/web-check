@@ -1,6 +1,6 @@
 :root {
-  --primary: #d6fb41;
-  --primary-lighter: #cff97a;
+  --primary: #7c3aed;
+  --primary-lighter: #a78bfa;
   --text-color: #ffffff;
   --text-color-secondary: #ffffffb6;
   --text-color-thirdly: #ffffff5b;
@@ -10,8 +10,8 @@
   --background-lighter: #3a3b3a;
   --background-50: #11121180;
   --bg-shadow-color: #0f1620;
-  --fg-shadow-color: #456602;
-  --primary-transparent: #d6fb4130;
+  --fg-shadow-color: #3b0764;
+  --primary-transparent: #7c3aed30;
 
   // Action Colors
   --info: #04e4f4;
@@ -23,14 +23,14 @@
 }
 
 html[data-theme='light'] {
-  --primary: #4a7700;
-  --primary-lighter: #a4cf50;
+  --primary: #6d28d9;
+  --primary-lighter: #8b5cf6;
   --text-color: #333333;
   --text-color-secondary: #57667e;
   --background: #ffffff;
   --background-darker: #f0f0f0;
   --background-lighter: #fafafa;
   --bg-shadow-color: #e0e0e0;
-  --fg-shadow-color: #678800;
-  --primary-transparent: #4a770033;
+  --fg-shadow-color: #4c1d95;
+  --primary-transparent: #6d28d933;
 }

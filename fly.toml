@@ -1,17 +1,38 @@
-app = 'web-check'
+# fly.toml — Web Check API (Fly.io) deployment config.
+#
+# Set `app` to your own Fly app name before deploying, and keep the real
+# production name OUT of this public repo: the *.fly.dev hostname is derived
+# directly from it, so disclosing it lets bots target the origin directly and
+# bypass the CDN/WAF in front. Use a long, non-guessable name and override at
+# deploy time (`fly deploy -a <name>`) if you'd rather not commit it at all.
+#
+# See https://fly.io/docs/reference/configuration/ for configuration details.
+
+app = 'your-web-check-app'
 primary_region = 'lhr'
+swap_size_mb = 512
+
+# This machine runs the API only — the frontend (homepage + results SPA) is
+# served from Cloudflare Pages. DISABLE_GUI makes server.js serve just /api, and
+# API_CORS_ORIGIN allows the Cloudflare origin to call it cross-origin. Result:
+# bot and crawler traffic stays on Cloudflare's CDN; Fly only wakes for real
+# check calls.
+[env]
+  DISABLE_GUI = 'true'
+  API_CORS_ORIGIN = 'https://hc.utoggl.in'
 
 [build]
 
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1
+  memory_mb = 256

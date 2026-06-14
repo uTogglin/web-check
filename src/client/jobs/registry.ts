@@ -1,5 +1,16 @@
 import { parseJson } from 'client/utils/parse-json';
 import { getLocation, parseShodanResults } from 'client/utils/result-processor';
+import {
+  clientGetIp,
+  clientLocation,
+  clientWhois,
+  clientDns,
+  clientDnssec,
+  clientCaa,
+  clientMailConfig,
+  clientTxtRecords,
+  clientScreenshot,
+} from 'client/jobs/client-checks';
 
 import ServerLocationCard from 'client/components/Results/ServerLocation';
 import ServerInfoCard from 'client/components/Results/ServerInfo';
@@ -38,6 +49,13 @@ import TlsConnectionCard from 'client/components/Results/TlsConnection';
 import TlsSecurityAuditCard from 'client/components/Results/TlsSecurityAudit';
 import TlsClientCompatCard from 'client/components/Results/TlsClientCompat';
 import SubdomainsCard from 'client/components/Results/Subdomains';
+import CaaCard from 'client/components/Results/Caa';
+import CertTransparencyCard from 'client/components/Results/CertTransparency';
+import EmailSecurityCard from 'client/components/Results/EmailSecurity';
+import ThirdPartyCard from 'client/components/Results/ThirdParty';
+import IpWhoisCard from 'client/components/Results/IpWhois';
+import AsnCard from 'client/components/Results/Asn';
+import OrgAsnsCard from 'client/components/Results/OrgAsns';
 
 import type { JobSpec, JobContext, JobsState } from './types';
 
@@ -128,7 +146,7 @@ export const jobs: JobSpec[] = [
     id: 'get-ip',
     cards: [],
     expectedAddressTypes: [...URL_ONLY],
-    fetcher: fetchAndProcess('get-ip?url=${url}', (r) => r.ip),
+    fetcher: clientGetIp,
   },
   {
     id: 'location',
@@ -136,7 +154,7 @@ export const jobs: JobSpec[] = [
     cards: [
       card('location', 'Server Location', ['server'], ServerLocationCard, { pick: getLocation }),
     ],
-    fetcher: fetchAndProcess('location?url=${ip}'),
+    fetcher: clientLocation,
   },
   {
     id: 'ssl',
@@ -151,7 +169,7 @@ export const jobs: JobSpec[] = [
       card('domain', 'Domain Whois', ['server'], DomainLookup),
       card('whois', 'Domain Info', ['server'], WhoIsCard),
     ],
-    fetcher: fetchAndProcess('whois?url=${url}'),
+    fetcher: clientWhois,
   },
   {
     id: 'quality',
@@ -190,7 +208,7 @@ export const jobs: JobSpec[] = [
     id: 'dns',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('dns', 'DNS Records', ['server'], DnsRecordsCard)],
-    fetcher: fetchAndProcess('dns?url=${url}'),
+    fetcher: clientDns,
   },
   {
     id: 'http-security',
@@ -247,7 +265,33 @@ export const jobs: JobSpec[] = [
     id: 'dnssec',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('dnssec', 'DNSSEC', ['security'], DnsSecCard)],
-    fetcher: fetchAndProcess('dnssec?url=${url}'),
+    fetcher: clientDnssec,
+  },
+  {
+    id: 'caa',
+    expectedAddressTypes: [...URL_ONLY],
+    cards: [card('caa', 'CAA Records', ['server', 'security'], CaaCard)],
+    fetcher: clientCaa,
+  },
+  {
+    id: 'cert-transparency',
+    expectedAddressTypes: [...URL_ONLY],
+    cards: [
+      card('cert-transparency', 'Certificate Transparency', ['security', 'meta'], CertTransparencyCard),
+    ],
+    fetcher: fetchAndRetry('cert-transparency?url=${url}'),
+  },
+  {
+    id: 'email-security',
+    expectedAddressTypes: [...URL_ONLY],
+    cards: [card('email-security', 'Email Security', ['security', 'server'], EmailSecurityCard)],
+    fetcher: fetchAndProcess('email-security?url=${url}'),
+  },
+  {
+    id: 'third-party',
+    expectedAddressTypes: [...URL_ONLY],
+    cards: [card('third-party', 'Third-Party Trackers', ['client', 'security'], ThirdPartyCard)],
+    fetcher: fetchAndProcess('third-party?url=${url}'),
   },
   {
     id: 'hsts',
@@ -265,7 +309,7 @@ export const jobs: JobSpec[] = [
     id: 'mail-config',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('mail-config', 'Email Configuration', ['server'], MailConfigCard)],
-    fetcher: fetchAndProcess('mail-config?url=${url}'),
+    fetcher: clientMailConfig,
   },
   {
     id: 'archives',
@@ -310,10 +354,28 @@ export const jobs: JobSpec[] = [
     fetcher: fetchAndProcess('ports?url=${ip}'),
   },
   {
+    id: 'ip-whois',
+    needsIp: true,
+    cards: [card('ip-whois', 'IP WHOIS', ['server', 'meta'], IpWhoisCard)],
+    fetcher: fetchAndRetry('ip-whois?url=${ip}'),
+  },
+  {
+    id: 'asn',
+    needsIp: true,
+    cards: [card('asn', 'ASN & Peering', ['server', 'meta'], AsnCard)],
+    fetcher: fetchAndRetry('asn?url=${ip}'),
+  },
+  {
+    id: 'org-asns',
+    expectedAddressTypes: [...URL_ONLY],
+    cards: [card('org-asns', 'Organization ASNs', ['server', 'meta'], OrgAsnsCard)],
+    fetcher: fetchAndRetry('org-asns?url=${url}'),
+  },
+  {
     id: 'txt-records',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('txt-records', 'TXT Records', ['server'], TxtRecordCard)],
-    fetcher: fetchAndProcess('txt-records?url=${url}'),
+    fetcher: clientTxtRecords,
   },
   {
     id: 'block-lists',
@@ -335,7 +397,7 @@ export const jobs: JobSpec[] = [
         fallback: (state: JobsState) => state.quality?.raw?.fullPageScreenshot?.screenshot,
       }),
     ],
-    fetcher: fetchAndProcess('screenshot?url=${url}'),
+    fetcher: clientScreenshot,
   },
   {
     id: 'social-tags',

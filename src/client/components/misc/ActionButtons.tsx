@@ -4,12 +4,17 @@ import colors from 'client/styles/colors';
 
 const ActionButtonContainer = styled.div`
   position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  opacity: 0.75;
+  top: 0.85rem;
+  right: 0.85rem;
+  opacity: 0.55;
   display: flex;
-  gap: 0.125rem;
-  align-items: baseline;
+  gap: 0.25rem;
+  align-items: center;
+  transition: opacity 0.18s ease;
+  z-index: 1;
+  &:hover {
+    opacity: 1;
+  }
 `;
 
 interface Action {
@@ -19,21 +24,24 @@ interface Action {
 }
 
 const actionButtonStyles = `
-  padding: 0 0.25rem;
-  font-size: 1.25rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
   text-align: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  color: ${colors.textColor};
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 8px;
+  color: ${colors.textColorSecondary};
   background: none;
   box-shadow: none;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.18s ease;
   margin: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   &:hover {
     color: ${colors.primary};
-    background: ${colors.backgroundDarker};
+    background: rgba(255, 255, 255, 0.06);
     box-shadow: none;
   }
 `;

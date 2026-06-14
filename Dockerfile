@@ -10,17 +10,13 @@ FROM node:${NODE_VERSION}-${DEBIAN_VERSION} AS build
 # Set the container's default shell to Bash and enable some options
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
-# Install Chromium browser and Download and verify Google Chrome's signing key
+# Install traceroute (used by the trace-route check) plus build tooling for any
+# native dependencies. No browser is installed: tech-stack runs browserless and
+# screenshots use a hosted API, so Chromium is no longer needed — keeping the
+# image small and cold starts fast.
 RUN apt-get update -qq --fix-missing && \
-    apt-get -qqy install --allow-unauthenticated gnupg wget && \
-    wget --quiet --output-document=- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/google-archive.gpg && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list && \
-    apt-get update -qq && \
-    apt-get -qqy --no-install-recommends install chromium traceroute python make g++ && \
-    rm -rf /var/lib/apt/lists/* 
-
-# Run the Chromium browser's version command and redirect its output to the /etc/chromium-version file
-RUN /usr/bin/chromium --no-sandbox --version > /etc/chromium-version
+    apt-get -qqy --no-install-recommends install traceroute python make g++ && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set the working directory to /app
 WORKDIR /app
@@ -48,17 +44,15 @@ COPY package.json yarn.lock ./
 COPY --from=build /app .
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends chromium traceroute && \
-    chmod 755 /usr/bin/chromium && \
+    apt-get install -y --no-install-recommends traceroute && \
     rm -rf /var/lib/apt/lists/* /app/node_modules/.cache
 
 # Exposed container port, the default is 3000, which can be modified through the environment variable PORT
 EXPOSE ${PORT:-3000}
 
-# Point Chromium-using libs at the system binary, skip puppeteer's bundled download
-ENV CHROME_PATH='/usr/bin/chromium' \
-    PUPPETEER_EXECUTABLE_PATH='/usr/bin/chromium' \
-    PUPPETEER_SKIP_DOWNLOAD='true'
+# No headless browser is bundled; belt-and-suspenders against any transitive
+# puppeteer (pulled in by wappalyzer's package) downloading Chromium.
+ENV PUPPETEER_SKIP_DOWNLOAD='true'
 
 LABEL org.opencontainers.image.title="Web-Check" \
       org.opencontainers.image.description="All-in-one OSINT tool for analysing any website" \
