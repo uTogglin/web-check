@@ -74,5 +74,37 @@ if (!isBossServer && isBossServer !== true) {
   redirects['/'] = '/check';
 }
 
+// Split the heavy client-side vendor libraries out of the single ~850 kB island
+// bundle into their own chunks. This lets the browser download them in parallel
+// and cache each independently across deploys, so a change to app code no longer
+// busts the (large, stable) charting/mapping vendor cache. Pure build-time
+// chunking — it changes nothing about what the app fetches or renders.
+const manualChunks = (id) => {
+  if (!id.includes('node_modules')) return undefined;
+  // Charting (recharts + its bundled d3 via victory-vendor) — the single
+  // largest dependency, only needed by the score/footprint cards.
+  if (id.includes('recharts') || id.includes('victory-vendor')) return 'vendor-charts';
+  // World-map rendering (react-simple-maps + geo/topology helpers).
+  if (id.includes('react-simple-maps') || id.includes('d3-geo') || id.includes('topojson'))
+    return 'vendor-maps';
+  // Stable framework core — changes rarely, so keep it cached across app deploys.
+  if (
+    id.includes('react-dom') ||
+    id.includes('react-router') ||
+    id.includes('scheduler') ||
+    id.includes('@emotion')
+  )
+    return 'vendor-react';
+  return undefined;
+};
+
 // Export Astro configuration
-export default defineConfig({ output, base, integrations, site, adapter, redirects });
+export default defineConfig({
+  output,
+  base,
+  integrations,
+  site,
+  adapter,
+  redirects,
+  vite: { build: { rollupOptions: { output: { manualChunks } } } },
+});

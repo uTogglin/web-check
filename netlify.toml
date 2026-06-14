@@ -27,12 +27,6 @@
   status = 301
   force = true
 
-# Plugins
-[[plugins]]
-package = "netlify-plugin-chromium"
-  [plugins.inputs]
-  packageManager = "yarn"
-
 # Set any security headers here
 [[headers]]
   for = "/*"

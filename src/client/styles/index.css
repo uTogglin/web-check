@@ -19,7 +19,7 @@ code {
 }
 
 ::selection {
-  background: var(--primary, #d6fb41);
+  background: var(--primary, #7c3aed);
   color: var(--background, #141517);
 }
 

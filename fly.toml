@@ -1,17 +1,30 @@
 app = 'web-check'
 primary_region = 'lhr'
 
+# Give the 256MB machine swap so it spills to disk under brief memory pressure
+# (e.g. loading the in-memory Wappalyzer fingerprint DB during a tech-stack scan)
+# instead of being OOM-killed. Swap only engages when RAM is exhausted and costs
+# nothing extra.
+swap_size_mb = 512
+
 [build]
 
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = true
+  # Scale to zero: stop the single machine when idle, boot it on the next
+  # request (cold start). No compute is billed while stopped.
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  # One shared-cpu-1x machine, 256MB RAM, in a single region (primary_region
+  # above). No headless browser runs any more, so this is enough for Astro SSR
+  # plus the remaining server-side checks. If you ever see OOM (exit 137) on a
+  # heavy scan even with swap, bump this to '512mb' — negligible cost when the
+  # machine spends most of its life stopped.
+  memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1

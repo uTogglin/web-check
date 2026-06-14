@@ -21,7 +21,7 @@ const MeteorContainer = styled(motion.div)`
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background-color: #9fef00;
+  background-color: #7c3aed;
   top: 1px;
 `;
 
@@ -31,7 +31,7 @@ const Tail = styled(motion.div)`
   left: 1px;
   width: 2px;
   height: 80px;
-  background: linear-gradient(to bottom, transparent, #9fef00);
+  background: linear-gradient(to bottom, transparent, #7c3aed);
 `;
 
 const StyledSvg = styled.svg`

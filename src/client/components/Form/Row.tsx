@@ -19,53 +19,87 @@ export const StyledRow = styled.div`
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  padding: 0.25rem;
-  &li {
-    border-bottom: 1px dashed ${colors.primaryTransparent} !important;
-  }
+  gap: 0.75rem 1rem;
+  align-items: baseline;
+  padding: 0.45rem 0.4rem;
+  border-radius: 6px;
+  transition: background 0.15s ease;
   &:not(:last-child) {
-    border-bottom: 1px solid ${colors.primaryTransparent};
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  &:hover {
+    background: rgba(255, 255, 255, 0.025);
   }
   span.lbl {
-    font-weight: bold;
-    flex: 1;
+    color: ${colors.textColorSecondary};
+    font-weight: 500;
+    flex: 1 1 auto;
+    min-width: 6rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   span.val {
+    color: ${colors.textColor};
+    font-weight: 500;
+    text-align: right;
     max-width: 16rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: default;
     a {
       color: ${colors.primary};
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 `;
 
 export const Details = styled.details`
-  transition: all 0.2s ease-in-out;
+  border-radius: 6px;
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
   summary {
-    padding-left: 1rem;
+    position: relative;
+    padding-left: 1.4rem;
     cursor: pointer;
+    list-style: none;
+    border-radius: 6px;
+    &::-webkit-details-marker {
+      display: none;
+    }
+    &:hover {
+      background: rgba(255, 255, 255, 0.025);
+    }
   }
   summary:before {
-    content: '►';
+    content: '▸';
     position: absolute;
-    margin-left: -1rem;
+    left: 0.4rem;
+    top: 0.5rem;
     color: ${colors.primary};
     cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  &[open] > summary {
+    border-bottom: none;
   }
   &[open] summary:before {
-    content: '▼';
+    transform: rotate(90deg);
   }
 `;
 
 const SubRowList = styled.ul`
-  margin: 0;
-  padding: 0.25rem;
-  background: ${colors.primaryTransparent};
+  list-style: none;
+  margin: 0.15rem 0 0.6rem 0.65rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.85rem;
+  background: rgba(255, 255, 255, 0.025);
+  border-left: 2px solid ${colors.primary}40;
+  border-radius: 0 6px 6px 0;
 `;
 
 const PlainText = styled.pre`
@@ -133,6 +167,9 @@ const formatDate = (dateString: string): string => {
   }).format(new Date(dateString));
 };
 const formatValue = (value: any): string => {
+  // Never hand React a raw object — serialise it so the row renders instead of
+  // throwing "Objects are not valid as a React child".
+  if (value !== null && typeof value === 'object') return JSON.stringify(value);
   if (isValidDate(new Date(value))) return formatDate(value);
   if (typeof value === 'boolean') return value ? '✅' : '❌';
   return value;

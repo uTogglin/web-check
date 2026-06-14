@@ -43,7 +43,11 @@ const CookiesCard = (props: { data: any; title: string; actionButtons: any }): J
       })}
       {clientCookies.map((cookie: any, index: number) => {
         const nameValPairs = Object.keys(cookie).map((key: string) => {
-          return { lbl: key, val: cookie[key] };
+          // Some CDP cookie fields are now objects (e.g. partitionKey ->
+          // { sourceOrigin, hasCrossSiteAncestor }); serialise so they render.
+          const raw = cookie[key];
+          const val = raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
+          return { lbl: key, val };
         });
         return (
           <ExpandableRow
