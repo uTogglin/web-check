@@ -148,7 +148,7 @@ const About = (): JSX.Element => {
       <AboutContainer>
         <Nav>
           <HeaderLinkContainer>
-            <a target="_blank" rel="noreferrer" href="https://github.com/lissy93/web-check">
+            <a target="_blank" rel="noreferrer" href="https://github.com/uTogglin/web-check">
               <Button>View on GitHub</Button>
             </a>
           </HeaderLinkContainer>
@@ -207,7 +207,7 @@ const About = (): JSX.Element => {
             <a
               target="_blank"
               rel="noreferrer"
-              href="https://github.com/Lissy93/web-check/blob/master/LICENSE"
+              href="https://github.com/lissy93/web-check/blob/master/LICENSE"
             >
               MIT license
             </a>
@@ -215,14 +215,10 @@ const About = (): JSX.Element => {
             settings.
             <br />
             Source code and self-hosting docs are available on{' '}
-            <a target="_blank" rel="noreferrer" href="https://github.com/lissy93/web-check">
+            <a target="_blank" rel="noreferrer" href="https://github.com/uTogglin/web-check">
               GitHub
             </a>
-            . If you've found this service useful, consider{' '}
-            <a target="_blank" rel="noreferrer" href="https://github.com/sponsors/Lissy93">
-              sponsoring me
-            </a>{' '}
-            from $1/month, to help with the ongoing hosting and development costs.
+            .
           </p>
         </Section>
 
@@ -316,47 +312,27 @@ const About = (): JSX.Element => {
         <Section>
           <p>Web-Check is designed to be easily self-hosted.</p>
           <Heading as="h3" size="small" color={colors.primary}>
-            Option #1 - Netlify
-          </Heading>
-          <p>Click the button below to deploy to Netlify</p>
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://app.netlify.com/start/deploy?repository=https://github.com/lissy93/web-check"
-          >
-            <img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify" />
-          </a>
-
-          <Heading as="h3" size="small" color={colors.primary}>
-            Option #2 - Vercel
-          </Heading>
-          <p>Click the button below to deploy to Vercel</p>
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flissy93%2Fweb-check&project-name=web-check&repository-name=web-check-fork&demo-title=Web-Check%20Demo&demo-description=Check%20out%20web-check.xyz%20to%20see%20a%20live%20demo%20of%20this%20application%20running.&demo-url=https%3A%2F%2Fweb-check.xyz&demo-image=https%3A%2F%2Fraw.githubusercontent.com%2FLissy93%2Fweb-check%2Fmaster%2F.github%2Fscreenshots%2Fweb-check-screenshot10.png"
-          >
-            <img src="https://vercel.com/button" alt="Deploy with Vercel" />
-          </a>
-
-          <Heading as="h3" size="small" color={colors.primary}>
-            Option #3 - Docker
+            Option #1 - Docker
           </Heading>
           <p>
             A Docker container is published to{' '}
-            <a target="_blank" rel="noreferrer" href="https://hub.docker.com/r/lissy93/web-check">
-              DockerHub
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://github.com/uTogglin/web-check/pkgs/container/web-check"
+            >
+              GitHub Container Registry
             </a>
             <br />
             Run this command, then open <code>localhost:3000</code>
-            <pre>docker run -p 3000:3000 lissy93/web-check</pre>
+            <pre>docker run -p 3000:3000 ghcr.io/utogglin/web-check</pre>
           </p>
 
           <Heading as="h3" size="small" color={colors.primary}>
-            Option #4 - Manual
+            Option #2 - Manual
           </Heading>
           <pre>
-            git clone https://github.com/Lissy93/web-check.git
+            git clone https://github.com/uTogglin/web-check.git
             <br />
             cd web-check # Move into the project directory
             <br />
@@ -374,8 +350,8 @@ const About = (): JSX.Element => {
           <p>
             More detailed installation and setup instructions can be found in the GitHub repository
             -{' '}
-            <a target="_blank" rel="noreferrer" href="https://github.com/lissy93/web-check#readme">
-              github.com/lissy93/web-check
+            <a target="_blank" rel="noreferrer" href="https://github.com/uTogglin/web-check#readme">
+              github.com/uTogglin/web-check
             </a>
           </p>
 

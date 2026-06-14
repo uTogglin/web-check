@@ -38,23 +38,6 @@ const UserInputMain = styled.form`
   z-index: 2;
 `;
 
-const SponsorCard = styled.div`
-  background: ${colors.backgroundLighter};
-  box-shadow: 4px 4px 0px ${colors.bgShadowColor};
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1rem;
-  width: calc(100% - 2rem);
-  max-width: 60rem;
-  z-index: 2;
-  p {
-    margin: 0.25rem 0;
-  }
-  a {
-    color: ${colors.primary};
-  }
-`;
-
 // const FindIpButton = styled.a`
 //   margin: 0.5rem;
 //   cursor: pointer;
@@ -208,19 +191,6 @@ const Home = (): JSX.Element => {
           Analyze!
         </Button>
       </UserInputMain>
-      <SponsorCard>
-        <Heading as="h2" size="small" color={colors.primary}>
-          Enjoying Web Check?
-        </Heading>
-        <p>
-          It's free, open source, and funded by the community. If it's been useful, you can keep it
-          going (and ad-free) by{' '}
-          <a target="_blank" rel="noreferrer" href="https://github.com/sponsors/Lissy93">
-            sponsoring me on GitHub
-          </a>
-          . Every bit genuinely helps, thank you
-        </p>
-      </SponsorCard>
       <SiteFeaturesWrapper>
         <div className="features">
           <Heading as="h2" size="small" color={colors.primary}>
@@ -243,18 +213,10 @@ const Home = (): JSX.Element => {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://github.com/lissy93/web-check"
+            href="https://github.com/uTogglin/web-check"
             title="Check out the source code and documentation on GitHub, and get support or contribute"
           >
             <Button>View on GitHub</Button>
-          </a>
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://app.netlify.com/start/deploy?repository=https://github.com/lissy93/web-check"
-            title="Deploy your own private or public instance of Web-Check to Netlify"
-          >
-            <Button>Deploy your own</Button>
           </a>
           <Link
             to="/check/about#api-documentation"
