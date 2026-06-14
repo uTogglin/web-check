@@ -12,7 +12,7 @@
   # Build configuration env vars (uncomment if you want to conigure these)
   # CI="false" # Set CI to false, to prevent warnings from exiting the build
   # CHROME_PATH='/usr/bin/chromium' # Path to Chromium binary
-  # NODE_VERSION = "16.16.0"  # Set the version of Node.js to use
+  # NODE_VERSION = "24"  # Set the version of Node.js to use
 
   # Optional secrets and API keys (uncomment if you want to add these)
   # GOOGLE_CLOUD_API_KEY=''     # Google Cloud API key, for running Lighthouse scans
