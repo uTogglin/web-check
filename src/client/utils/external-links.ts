@@ -1,9 +1,10 @@
 // Builders for "view this identifier at the source" links.
 //
-// bgp.tools is the BGP detail provider: a modern, fast explorer that renders
-// ASNs, IP addresses and routed prefixes (peers, upstreams, prefixes, whois,
-// DNS, RPKI) with no API key. A bare IP has no dedicated page, so it is routed
-// through the search endpoint, which redirects to the covering prefix.
+// bgp.tools is the BGP detail provider for ASNs and routed prefixes: a modern,
+// fast explorer (peers, upstreams, prefixes, whois, DNS, RPKI) with no API key
+// and a clean /as/ and /prefix/ page per identifier. It has no dedicated page
+// for a single IP, though, so IP lookups go to ipinfo.io instead — a polished,
+// reliable per-IP page (geo, ASN, hostname, abuse) that needs no login.
 
 const BGP = 'https://bgp.tools';
 
@@ -13,8 +14,8 @@ const asnNumber = (asn: string | number): string => `${asn}`.trim().replace(/^as
 /** Detail page for an Autonomous System, e.g. AS15169 -> https://bgp.tools/as/15169 */
 export const asnUrl = (asn: string | number): string => `${BGP}/as/${asnNumber(asn)}`;
 
-/** Lookup for a single IP address (v4 or v6) — resolves to its covering prefix. */
-export const ipUrl = (ip: string): string => `${BGP}/search?q=${encodeURIComponent(ip.trim())}`;
+/** Detail page for a single IP address (v4 or v6), e.g. 8.8.8.8 -> https://ipinfo.io/8.8.8.8 */
+export const ipUrl = (ip: string): string => `https://ipinfo.io/${encodeURIComponent(ip.trim())}`;
 
 /** Detail page for a routed prefix / CIDR block, e.g. 8.8.8.0/24 -> /prefix/8.8.8.0/24 */
 export const prefixUrl = (cidr: string): string => `${BGP}/prefix/${cidr.trim()}`;
@@ -50,8 +51,8 @@ export const isIpAddress = (val: string): boolean => {
 };
 
 /**
- * Best link for a bare host identifier: IP addresses resolve to their bgp.tools
- * prefix, everything else (hostnames, domains) opens over https.
+ * Best link for a bare host identifier: IP addresses open their ipinfo.io page,
+ * everything else (hostnames, domains) opens over https.
  */
 export const hostUrl = (val: string): string =>
   isIpAddress(val) ? ipUrl(val) : siteUrl(val);

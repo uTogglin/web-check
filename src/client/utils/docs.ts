@@ -649,7 +649,7 @@ const docs: Doc[] = [
       'Discovers subdomains belonging to a target domain by querying public Certificate Transparency logs (via crt.sh). Every TLS certificate issued for a hostname is logged publicly, so the CT logs effectively reveal any subdomain the operator has ever requested a cert for. The check resolves the registrable domain (eTLD+1), then collects, deduplicates and filters the SAN values from every cert ever issued under that zone.',
     use: "Subdomains are a classic part of an attack surface map. They often expose dev, staging, admin or legacy services that the main site's owners forgot about, and which may not be hardened to the same standard as production. From a defensive standpoint, this lets you audit what is publicly discoverable about your own infrastructure. For OSINT investigators, the list of subdomains can hint at a target's internal services, vendors, regions, and historical projects.",
     resources: [
-      { title: 'crt.sh', link: 'https://crt.sh/' },
+      { title: 'MerkleMap (CT Search)', link: 'https://www.merklemap.com/' },
       {
         title: 'Certificate Transparency',
         link: 'https://en.wikipedia.org/wiki/Certificate_Transparency',
