@@ -3,16 +3,28 @@ import BaseLayout from '@layouts/Base.astro';
 import Main from '../../client/main.tsx';
 import '../../client/styles/index.css';
 import { normalizeAddress } from '../../client/utils/address-type-checker';
+import { withBase } from '@/utils/with-base';
 
-export const prerender = false;
+// On static hosts (GitHub Pages) there is no server runtime, so this route is
+// pre-rendered to a shell. Deep links like /check/example.com are served the
+// same SPA via the 404.html fallback, which boots React and routes client-side.
+export const prerender = import.meta.env.PUBLIC_BUILD_STATIC === 'true';
 
-const { search } = new URL(Astro.request.url);
+// Pre-render only the base /check shell; the rest-param targets are handled
+// client-side (and via 404.html on static hosts). Ignored in server builds.
+export function getStaticPaths() {
+  return [{ params: { target: undefined } }];
+}
 
-const searchUrl = new URLSearchParams(search).get('url');
-
-if (searchUrl) {
-  const target = normalizeAddress(searchUrl);
-  if (target) Astro.redirect(`/check/${target}`);
+// Server-side ?url= redirect only runs on the server (Fly). On static builds the
+// inline <script> below performs the same redirect client-side.
+if (!import.meta.env.PUBLIC_BUILD_STATIC) {
+  const { search } = new URL(Astro.request.url);
+  const searchUrl = new URLSearchParams(search).get('url');
+  if (searchUrl) {
+    const target = normalizeAddress(searchUrl);
+    if (target) Astro.redirect(`/check/${target}`);
+  }
 }
 
 const { target } = Astro.params;
@@ -22,7 +34,7 @@ const pageTitle = target ? `${target} | Web Check` : 'Web Check';
 <BaseLayout preloadBodyFont={false} title={pageTitle}>
   <link
     slot="head"
-    href="/fonts/PTMono-Regular.woff2"
+    href={withBase('fonts/PTMono-Regular.woff2')}
     as="font"
     rel="preload"
     type="font/woff2"
@@ -33,11 +45,12 @@ const pageTitle = target ? `${target} | Web Check` : 'Web Check';
 
 <script>
   import { normalizeAddress } from '../../client/utils/address-type-checker';
+  import { withBase } from '@/utils/with-base';
 
   const searchParams = new URL(window.location.href).searchParams;
   if (searchParams.has('url')) {
     const target = normalizeAddress(searchParams.get('url') || '');
-    if (target) window.location.href = `/check/${target}`;
+    if (target) window.location.href = withBase(`check/${target}`);
   }
 
   const form = document.querySelector<HTMLFormElement>('form');
@@ -46,7 +59,7 @@ const pageTitle = target ? `${target} | Web Check` : 'Web Check';
       event.preventDefault();
       const input = (this as HTMLFormElement).querySelector<HTMLInputElement>('input[name="url"]');
       const target = normalizeAddress(input?.value);
-      if (target) window.location.href = `/check/${target}`;
+      if (target) window.location.href = withBase(`check/${target}`);
     });
   }
 </script>

@@ -1,0 +1,22 @@
+---
+// SPA fallback. On static hosts (e.g. GitHub Pages) any unmatched path is served
+// this page. It boots the same React app as /check, which reads the current URL
+// and routes client-side — so deep links like /check/example.com work without a
+// server. On server hosts (Fly) this simply renders as the 404 page.
+import BaseLayout from '@layouts/Base.astro';
+import Main from '../client/main.tsx';
+import '../client/styles/index.css';
+import { withBase } from '@/utils/with-base';
+---
+
+<BaseLayout preloadBodyFont={false} title="Web Check">
+  <link
+    slot="head"
+    href={withBase('fonts/PTMono-Regular.woff2')}
+    as="font"
+    rel="preload"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+  <Main client:only="react" />
+</BaseLayout>

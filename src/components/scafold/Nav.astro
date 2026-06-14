@@ -1,11 +1,11 @@
 ---
-
+import { withBase } from '@/utils/with-base';
 ---
 
 <nav class="navbar">
   <div class="nav-left">
-    <a href="/" class="logo-link" aria-label="Home">
-      <img width="64" src="/favicon.svg" alt="Site Logo" />
+    <a href={withBase()} class="logo-link" aria-label="Home">
+      <img width="64" src={withBase('favicon.svg')} alt="Site Logo" />
       <h2 class="site-title">
         <span class="first">Web</span>
         <span class="second">Check</span>
@@ -13,9 +13,9 @@
     </a>
   </div>
   <div class="nav-right">
-    <a href="/check" class="nav-link">Check</a>
-    <a href="/web-check-api" class="nav-link">API</a>
-    <a href="/account" class="nav-link">Login</a>
+    <a href={withBase('check')} class="nav-link">Check</a>
+    <a href={withBase('web-check-api')} class="nav-link">API</a>
+    <a href={withBase('account')} class="nav-link">Login</a>
   </div>
 </nav>
 

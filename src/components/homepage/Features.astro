@@ -1,5 +1,6 @@
 ---
 import Icon from '@components/molecules/Icon.svelte';
+import { withBase } from '@/utils/with-base';
 
 interface Props {
   supportedChecks: string[];
@@ -17,7 +18,9 @@ const { supportedChecks } = Astro.props;
       </li>
     ))
   }
-  <li><Icon name="plus" /><a href="/about#features">More</a></li>
+  <li>
+    <Icon name="plus" /><a href={withBase('check/about#features')}>More</a>
+  </li>
 </ul>
 
 <style lang="scss">

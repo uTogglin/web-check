@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import MetaTags from '@layouts/MetaTags.astro';
+import { withBase } from '@/utils/with-base';
 
 import '@styles/typography.scss';
 import '@styles/global.scss';
@@ -31,7 +32,7 @@ const { preloadBodyFont = true } = Astro.props;
     {
       preloadBodyFont && (
         <link
-          href="/fonts/Hubot-Sans/WOFF2/HubotSans-Regular.woff2"
+          href={withBase('fonts/Hubot-Sans/WOFF2/HubotSans-Regular.woff2')}
           as="font"
           rel="preload"
           type="font/woff2"

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { StyledCard } from 'client/components/Form/Card';
 import Heading from 'client/components/Form/Heading';
 import colors from 'client/styles/colors';
+import { withBase } from '@/utils/with-base';
 
 const Header = styled(StyledCard)`
   margin: 0 auto;
@@ -20,8 +21,8 @@ const Nav = (props: { children?: ReactNode }) => {
   return (
     <Header as="header">
       <Heading color={colors.primary} size="large">
-        <img width="64" src="/favicon.svg" alt="Web Check Icon" />
-        <a href="/" target="_self">
+        <img width="64" src={withBase('favicon.svg')} alt="Web Check Icon" />
+        <a href={withBase()} target="_self">
           Web Check
         </a>
       </Heading>

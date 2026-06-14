@@ -3,6 +3,7 @@ import BaseLayout from '@layouts/Base.astro';
 import NavBar from '@components/scafold/Nav.astro';
 import Footer from '@components/scafold/Footer.astro';
 import Icon from '@components/molecules/Icon.svelte';
+import { withBase } from '@/utils/with-base';
 
 const cardData = [
   {
@@ -46,7 +47,7 @@ const cardData = [
                 <div class="buttons">
                   {card.buttons.map((button) => (
                     <a href={button.link}>
-                      <img src={button.image} />
+                      <img src={withBase(button.image)} />
                       {button.name}
                     </a>
                   ))}
@@ -79,7 +80,7 @@ const cardData = [
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    background-image: url('/assets/images/background-dots.svg');
+    background-image: url('#{$base-url}assets/images/background-dots.svg');
     @include mobile-down {
       padding: 0.5rem;
     }

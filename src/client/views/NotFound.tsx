@@ -6,6 +6,7 @@ import Footer from 'client/components/misc/Footer';
 import Nav from 'client/components/Form/Nav';
 import Button from 'client/components/Form/Button';
 import { StyledCard } from 'client/components/Form/Card';
+import { withBase } from '@/utils/with-base';
 
 const AboutContainer = styled.div`
   width: 95vw;
@@ -59,7 +60,7 @@ const NotFound = (): JSX.Element => {
             Not Found
           </Heading>
           <HeaderLinkContainer>
-            <a href="/">
+            <a href={withBase()}>
               <Button>Back to Homepage</Button>
             </a>
           </HeaderLinkContainer>

@@ -2,6 +2,7 @@
 import BaseLayout from '@layouts/Base.astro';
 import NavBar from '@components/scafold/Nav.astro';
 import Footer from '@components/scafold/Footer.astro';
+import { withBase } from '@/utils/with-base';
 ---
 
 <BaseLayout title="API | Web Check" description="Get started with the Web Check API.">
@@ -20,8 +21,8 @@ import Footer from '@components/scafold/Footer.astro';
           <h3>API Documentation</h3>
           <p>View listing of all available endpoints, their usage, output and examples.</p>
           <div class="buttons">
-            <a href="/web-check-api/spec">
-              <img src="/assets/images/swagger.svg" />
+            <a href={withBase('web-check-api/spec')}>
+              <img src={withBase('assets/images/swagger.svg')} />
               OpenAPI Spec
             </a>
           </div>
@@ -30,8 +31,8 @@ import Footer from '@components/scafold/Footer.astro';
           <h3>API Key</h3>
           <p>Get your API key, and start using the API.</p>
           <div class="buttons">
-            <a href="/account">
-              <img src="/assets/images/webauthn.svg" />
+            <a href={withBase('account')}>
+              <img src={withBase('assets/images/webauthn.svg')} />
               Sign Up
             </a>
           </div>
@@ -41,7 +42,7 @@ import Footer from '@components/scafold/Footer.astro';
           <p>View, edit, download or deploy the API from source.</p>
           <div class="buttons">
             <a href="https://github.com/xray-web/web-check-api" target="_blank" rel="noreferrer">
-              <img src="/assets/images/github.svg" />
+              <img src={withBase('assets/images/github.svg')} />
               GitHub
             </a>
           </div>
@@ -86,7 +87,7 @@ import Footer from '@components/scafold/Footer.astro';
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    background-image: url('/assets/images/background-dots.svg');
+    background-image: url('#{$base-url}assets/images/background-dots.svg');
     @include mobile-down {
       padding: 0.5rem;
     }

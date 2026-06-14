@@ -2,12 +2,13 @@
 import AnimatedButton from './AnimatedButton.astro';
 import AnimatedInput from './AnimatedInput.astro';
 import Screenshots from './Screenshots.astro';
+import { withBase } from '@/utils/with-base';
 ---
 
 <div class="hero">
   <div class="left">
     <h1>
-      <img src="/favicon.svg" alt="Check Web" width="64" />
+      <img src={withBase('favicon.svg')} alt="Check Web" width="64" />
       <span class="web">Web</span>
       <span class="check">Check</span>
     </h1>
@@ -17,7 +18,13 @@ import Screenshots from './Screenshots.astro';
         In just 20 seconds, you can see
         <span>what attackers already know</span>
       </h3>
-      <form name="live-start" autocomplete="off" action="/check" class="live-start" id="live-start">
+      <form
+        name="live-start"
+        autocomplete="off"
+        action={withBase('check')}
+        class="live-start"
+        id="live-start"
+      >
         <label for="url">Enter a URL to start 👇</label>
         <AnimatedInput />
         <AnimatedButton />
@@ -29,6 +36,7 @@ import Screenshots from './Screenshots.astro';
 
 <script>
   import { normalizeAddress } from '../../client/utils/address-type-checker';
+  import { withBase } from '@/utils/with-base';
 
   const form = document.getElementById('live-start');
   const urlInput = document.getElementById('url-input') as HTMLInputElement;
@@ -36,7 +44,7 @@ import Screenshots from './Screenshots.astro';
   form?.addEventListener('submit', (event) => {
     event.preventDefault();
     const target = normalizeAddress(urlInput.value);
-    if (target) window.location.href = `/check/${target}`;
+    if (target) window.location.href = withBase(`check/${target}`);
   });
 </script>
 

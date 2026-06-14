@@ -12,6 +12,7 @@ import FancyBackground from 'client/components/misc/FancyBackground';
 import docs from 'client/utils/docs';
 import colors from 'client/styles/colors';
 import { determineAddressType, normalizeAddress } from 'client/utils/address-type-checker';
+import { withBase } from '@/utils/with-base';
 
 const HomeContainer = styled.section`
   display: flex;
@@ -167,9 +168,9 @@ const Home = (): JSX.Element => {
     <HomeContainer>
       <FancyBackground />
       <UserInputMain onSubmit={formSubmitEvent}>
-        <a href="/">
+        <a href={withBase()}>
           <Heading as="h1" size="xLarge" align="center" color={colors.primary}>
-            <img width="64" src="/web-check.png" alt="Web Check Icon" />
+            <img width="64" src={withBase('web-check.png')} alt="Web Check Icon" />
             Web Check
           </Heading>
         </a>

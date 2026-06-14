@@ -4,6 +4,7 @@ import colors from 'client/styles/colors';
 import Card from 'client/components/Form/Card';
 import Heading from 'client/components/Form/Heading';
 import { allCardIds } from 'client/jobs/registry';
+import { withBase } from '@/utils/with-base';
 
 export type LoadingState = 'success' | 'loading' | 'skipped' | 'error' | 'timed-out';
 
@@ -501,7 +502,7 @@ const ProgressLoader = ({ loadStatus, showModal, showJobDocs }: ProgressLoaderPr
                   required info, or restrictions in the lambda function, or hitting an API limit.
                 </p>
               )}
-              <AboutPageLink href="/check/about" target="_blank" rel="noreferrer">
+              <AboutPageLink href={withBase('check/about')} target="_blank" rel="noreferrer">
                 Learn More about Web-Check
               </AboutPageLink>
             </Details>

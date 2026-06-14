@@ -1,4 +1,5 @@
 /* Global Stylesheet */
+@forward './env'; // re-export $base-url so consumers of global get the base path
 @forward './colors';
 @forward './media-queries';
 @forward './typography';
