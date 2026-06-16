@@ -1,0 +1,159 @@
+---
+import BaseLayout from '@layouts/Base.astro';
+import NavBar from '@components/scafold/Nav.astro';
+import Footer from '@components/scafold/Footer.astro';
+
+const lastUpdated = '16 June 2026';
+const contactEmail = 'abuse@utoggl.in';
+const turnstileAddendum =
+  'https://www.cloudflare.com/application-services/terms/turnstile-privacy-addendum/';
+---
+
+<BaseLayout
+  title="Privacy Policy | Web Check"
+  description="How this hosted instance of Web Check handles your data."
+>
+  <div class="web-check-page">
+    <NavBar />
+    <main>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: {lastUpdated}</p>
+
+      <p>
+        This policy explains what happens to data when you use this hosted instance of
+        <strong>Web Check</strong>, an open-source tool that inspects the public configuration of a
+        website, domain, or IP address you submit. By design, the target you enter is sent to a
+        number of third-party lookup services in order to build a report. If you would rather not
+        share data with those services, you can
+        <a href="https://github.com/uTogglin/web-check">self-host Web Check</a> with your own API
+        keys (or none).
+      </p>
+
+      <h2>1. What we collect</h2>
+      <p>The Service is built to be stateless — no account, no tracking cookies, no database of your scans.</p>
+      <ul>
+        <li><strong>The target you submit</strong> — the domain, URL, or IP you ask us to check. It is sent to the third-party services below to produce the report.</li>
+        <li><strong>Connection metadata</strong> — your IP address, user-agent, and request time, used transiently for rate limiting and the bot-protection check (Section 4). Not stored long-term.</li>
+        <li><strong>Aggregate, non-identifying usage stats</strong> — only if analytics are enabled (Section 5).</li>
+      </ul>
+      <p>We do not knowingly collect personal information about you, and we do not sell any data.</p>
+
+      <h2>2. Where checks run</h2>
+      <p>
+        Many checks run <strong>directly from your browser</strong> rather than from our servers.
+        This is faster, but it means that when a check runs in your browser, your own IP address and
+        browser are visible to that third-party API. Other checks run on our backend, in which case
+        the third party sees our server instead. Either way, the target you are scanning is shared
+        with the relevant services so they can return information about it.
+      </p>
+
+      <h2>3. Third-party services that receive scan data</h2>
+      <p>
+        Depending on which checks run, some or all of the following may receive the target
+        domain/URL/IP. Each operates under its own privacy policy, over which we have no control.
+      </p>
+      <p><strong>Infrastructure:</strong> Cloudflare (CDN, DNS, bot protection) and a third-party cloud hosting provider for the backend API.</p>
+      <p><strong>DNS, WHOIS &amp; registry:</strong> Google Public DNS &amp; Cloudflare DNS (DNS-over-HTTPS), rdap.org (RDAP/WHOIS), RIPE NCC (ASN/IP data), crt.sh (Certificate Transparency), Tranco (domain ranking).</p>
+      <p><strong>Geolocation:</strong> ipwho.is, geojs.io, reallyfreegeoip.org, ipinfo.io, restcountries.com, flagcdn.com.</p>
+      <p><strong>Security &amp; reputation:</strong> Google Safe Browsing, PhishTank, URLhaus / abuse.ch, Shodan, Qualys SSL Labs, Cloudmersive.</p>
+      <p><strong>Content &amp; metadata:</strong> Microlink (screenshots), icon.horse (favicons), the Internet Archive (snapshot history).</p>
+      <p><strong>Other:</strong> jsonhero.io — only if you explicitly choose to view/share a result's raw JSON.</p>
+      <p class="note">
+        Web Check also links out to many reference and documentation sites (MDN, OWASP, Wikipedia,
+        registrar pages, etc.). Those are ordinary hyperlinks you choose to click; no scan data is
+        sent to them automatically.
+      </p>
+
+      <h2>4. Bot protection — Cloudflare Turnstile</h2>
+      <p>
+        To keep this free service available and prevent automated abuse, the Service uses
+        <strong>Cloudflare Turnstile</strong> to verify that requests come from a real person. When
+        you run a scan, Turnstile runs in the background and may collect data (including your IP
+        address and signals about your browser/session) to assess whether you are human. This
+        instance uses Turnstile's <strong>invisible</strong> mode; as a condition of that mode we
+        are required to point you to Cloudflare's
+        <a href={turnstileAddendum} target="_blank" rel="noopener">Turnstile Privacy Addendum</a>
+        (see also the
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare Privacy Policy</a>).
+        Turnstile is designed to be privacy-preserving and does not use the data for advertising or
+        cross-site tracking.
+      </p>
+
+      <h2>5. Analytics</h2>
+      <p>
+        If analytics are enabled on this instance, we use <strong>Plausible Analytics</strong>, a
+        privacy-friendly, cookieless tool that collects only aggregate, non-identifying usage
+        statistics. It does not track you across sites or store personal data. If disabled, no such
+        data is collected.
+      </p>
+
+      <h2>6. Cookies</h2>
+      <p>
+        The Service does not set advertising or cross-site tracking cookies. Any storage used is
+        limited to what is technically necessary to operate the app (for example, a short-lived
+        verification token held for the duration of a scan).
+      </p>
+
+      <h2>7. Data retention</h2>
+      <ul>
+        <li>Scan inputs and results are processed on demand and are not persisted in a database by this Service.</li>
+        <li>Rate-limiting and bot-protection data is transient and not retained beyond what is needed to operate those protections.</li>
+        <li>Third-party services retain data according to their own policies.</li>
+      </ul>
+
+      <h2>8. Your choices</h2>
+      <ul>
+        <li>You can <a href="https://github.com/uTogglin/web-check">self-host Web Check</a> to avoid sharing data with this instance.</li>
+        <li>You can avoid specific third parties by self-hosting and omitting their API keys.</li>
+        <li>Only submit targets you are authorised to inspect; Web Check reports on publicly available configuration only.</li>
+      </ul>
+
+      <h2>9. Changes to this policy</h2>
+      <p>We may update this policy as the Service or its dependencies change. The "Last updated" date above reflects the latest revision.</p>
+
+      <h2>10. Contact</h2>
+      <p>Questions about this policy can be sent to <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.</p>
+
+      <p class="note">
+        Web Check is open-source software. This policy covers this particular hosted instance only;
+        other deployments may differ.
+      </p>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style lang="scss">
+  main {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    line-height: 1.6;
+  }
+  h1 {
+    margin-bottom: 0.25rem;
+  }
+  .updated {
+    opacity: 0.6;
+    margin-top: 0;
+    font-size: 0.9rem;
+  }
+  h2 {
+    margin-top: 2rem;
+    border-bottom: 1px solid rgba(127, 127, 127, 0.2);
+    padding-bottom: 0.25rem;
+  }
+  ul {
+    padding-left: 1.25rem;
+  }
+  li {
+    margin: 0.35rem 0;
+  }
+  a {
+    text-decoration: underline;
+  }
+  .note {
+    opacity: 0.7;
+    font-size: 0.9rem;
+  }
+</style>
