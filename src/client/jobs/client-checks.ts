@@ -6,6 +6,7 @@
 
 import type { JobContext } from './types';
 import { parseJson } from 'client/utils/parse-json';
+import { getApiAuthHeaders } from 'client/utils/api-auth';
 import {
   dohQuery,
   answersOfType,
@@ -346,8 +347,10 @@ const mapRdap = (data: any, fallbackDomain: string) => {
 // fast path can't handle, so the common case still costs zero invocations.
 const serverWhois = async (ctx: JobContext) => {
   try {
+    const headers = await getApiAuthHeaders();
     const res = await fetch(`${ctx.api}/whois?url=${encodeURIComponent(ctx.address)}`, {
       signal: ctx.signal,
+      headers,
     });
     return await parseJson(res);
   } catch (err) {

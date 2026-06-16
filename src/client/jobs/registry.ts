@@ -1,4 +1,5 @@
 import { parseJson } from 'client/utils/parse-json';
+import { getApiAuthHeaders, clearApiAuth } from 'client/utils/api-auth';
 import { getLocation, parseShodanResults } from 'client/utils/result-processor';
 import {
   clientGetIp,
@@ -67,7 +68,9 @@ const fetchAndProcess =
   async (ctx: JobContext) => {
     const target = path.includes('${ip}') ? ctx.ipAddress || '' : ctx.address;
     const url = path.replace(/\$\{(ip|url)\}/g, target);
-    const res = await fetch(`${ctx.api}/${url}`, { signal: ctx.signal });
+    const headers = await getApiAuthHeaders();
+    const res = await fetch(`${ctx.api}/${url}`, { signal: ctx.signal, headers });
+    if (res.status === 403) clearApiAuth(); // session may have expired; force re-solve next time
     const raw = await parseJson(res);
     return raw?.error ? raw : process(raw);
   };
