@@ -32,6 +32,7 @@ interface Turnstile {
 declare global {
   interface Window {
     turnstile?: Turnstile;
+    onloadTurnstileCallback?: () => void;
   }
 }
 
@@ -41,23 +42,27 @@ let scriptPromise: Promise<void> | null = null;
 let widgetId: string | null = null;
 let container: HTMLElement | null = null;
 
+// Load the Turnstile API and resolve once it is ready. We use the script's
+// `onload` callback param (the supported way to know it's ready when loading
+// async) rather than turnstile.ready(), which errors on async/defer scripts.
 const loadScript = (): Promise<void> => {
   if (window.turnstile) return Promise.resolve();
   if (scriptPromise) return scriptPromise;
   scriptPromise = new Promise<void>((resolve, reject) => {
+    window.onloadTurnstileCallback = () => resolve();
     const s = document.createElement('script');
-    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    s.src =
+      'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback';
     s.async = true;
     s.defer = true;
-    s.onload = () => resolve();
     s.onerror = () => reject(new Error('Failed to load Turnstile'));
     document.head.appendChild(s);
   });
   return scriptPromise;
 };
 
-// Render an invisible widget once, then execute it each time we need a fresh
-// Turnstile token. Resolves with the token Cloudflare hands to the callback.
+// Render the (invisible) widget once, then reset it to get a fresh token on
+// subsequent calls. Resolves with the token Cloudflare hands to the callback.
 const solveTurnstile = (): Promise<string> =>
   new Promise((resolve, reject) => {
     let settled = false;
@@ -72,30 +77,27 @@ const solveTurnstile = (): Promise<string> =>
       reject(new Error('Turnstile challenge failed'));
     };
 
-    window.turnstile!.ready(() => {
-      try {
-        if (widgetId === null) {
-          container = document.createElement('div');
-          container.style.position = 'fixed';
-          container.style.bottom = '0';
-          container.style.right = '0';
-          container.style.zIndex = '2147483647';
-          document.body.appendChild(container);
-          widgetId = window.turnstile!.render(container, {
-            sitekey: SITE_KEY,
-            size: 'invisible',
-            callback: onToken,
-            'error-callback': onError,
-            'timeout-callback': onError,
-          });
-        } else {
-          window.turnstile!.reset(widgetId);
-        }
-        window.turnstile!.execute(widgetId);
-      } catch (err) {
-        onError();
+    try {
+      if (widgetId === null) {
+        container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.bottom = '0';
+        container.style.right = '0';
+        container.style.zIndex = '2147483647';
+        document.body.appendChild(container);
+        widgetId = window.turnstile!.render(container, {
+          sitekey: SITE_KEY,
+          callback: onToken,
+          'error-callback': onError,
+          'timeout-callback': onError,
+        });
+      } else {
+        // A reset re-runs an invisible widget and fires the callback again.
+        window.turnstile!.reset(widgetId);
       }
-    });
+    } catch (err) {
+      onError();
+    }
   });
 
 const obtainSessionToken = async (): Promise<string> => {
