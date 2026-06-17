@@ -107,6 +107,8 @@ const obtainSessionToken = async (): Promise<string> => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token: turnstileToken }),
+    // Receive the session cookie the API pairs with the token.
+    credentials: 'include',
   });
   if (!res.ok) throw new Error('Could not verify you are human (Turnstile rejected)');
   const data = await res.json();

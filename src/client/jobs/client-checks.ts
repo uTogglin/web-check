@@ -351,6 +351,7 @@ const serverWhois = async (ctx: JobContext) => {
     const res = await fetch(`${ctx.api}/whois?url=${encodeURIComponent(ctx.address)}`, {
       signal: ctx.signal,
       headers,
+      credentials: 'include', // send the session cookie paired with the token
     });
     return await parseJson(res);
   } catch (err) {

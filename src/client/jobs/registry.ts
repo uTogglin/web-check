@@ -69,7 +69,11 @@ const fetchAndProcess =
     const target = path.includes('${ip}') ? ctx.ipAddress || '' : ctx.address;
     const url = path.replace(/\$\{(ip|url)\}/g, target);
     const headers = await getApiAuthHeaders();
-    const res = await fetch(`${ctx.api}/${url}`, { signal: ctx.signal, headers });
+    const res = await fetch(`${ctx.api}/${url}`, {
+      signal: ctx.signal,
+      headers,
+      credentials: 'include', // send the session cookie paired with the token
+    });
     if (res.status === 403) clearApiAuth(); // session may have expired; force re-solve next time
     const raw = await parseJson(res);
     return raw?.error ? raw : process(raw);
