@@ -7,6 +7,8 @@ export interface JobContext {
   ipAddress?: string;
   api: string;
   signal: AbortSignal;
+  scanKey: number;
+  scanSignal: AbortSignal;
 }
 
 export interface CardSpec {
@@ -25,6 +27,8 @@ export interface JobSpec {
   expectedAddressTypes?: AddressType[];
   needsIp?: boolean;
   noClientTimeout?: boolean;
+  streamed?: boolean;
+  retryFetcher?: (ctx: JobContext) => Promise<any>;
 }
 
 export interface JobEntry {

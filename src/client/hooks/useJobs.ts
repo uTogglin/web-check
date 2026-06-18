@@ -61,6 +61,8 @@ const useJobs = (address: string, addressType: AddressType, jobs: JobSpec[]) => 
   const [ipLookupError, setIpLookupError] = useState<string | undefined>();
   const startTime = useRef(Date.now()).current;
   const controllers = useRef<Record<string, AbortController>>({});
+  const scanController = useRef<AbortController>(new AbortController());
+  const scanKey = useRef(0);
   const fired = useRef<Set<string>>(new Set());
   const stateRef = useRef(state);
   useEffect(() => {
@@ -68,7 +70,7 @@ const useJobs = (address: string, addressType: AddressType, jobs: JobSpec[]) => 
   }, [state]);
 
   const runJob = useCallback(
-    (job: JobSpec, ip?: string) => {
+    (job: JobSpec, ip?: string, useRetryFetcher = false) => {
       const cardIds = job.cards.map((c) => c.id);
       controllers.current[job.id]?.abort();
       const controller = new AbortController();
@@ -77,9 +79,16 @@ const useJobs = (address: string, addressType: AddressType, jobs: JobSpec[]) => 
 
       if (cardIds.length) dispatch({ type: 'start', cardIds });
 
-      const ctx: JobContext = { address, ipAddress: ip, api: apiBase, signal: controller.signal };
-      job
-        .fetcher(ctx)
+      const ctx: JobContext = {
+        address,
+        ipAddress: ip,
+        api: apiBase,
+        signal: controller.signal,
+        scanKey: scanKey.current,
+        scanSignal: scanController.current.signal,
+      };
+      const fetcher = useRetryFetcher && job.retryFetcher ? job.retryFetcher : job.fetcher;
+      fetcher(ctx)
         .then((raw: any) => {
           if (controller.signal.aborted) return;
           const timeTaken = Date.now() - startTime;
@@ -157,6 +166,12 @@ const useJobs = (address: string, addressType: AddressType, jobs: JobSpec[]) => 
 
     fired.current.clear();
     setIpLookupError(undefined);
+
+    // Start a fresh scan: abort the previous shared stream and bump the scan key
+    scanController.current.abort();
+    scanController.current = new AbortController();
+    scanKey.current += 1;
+
     if (addressType === 'ipV4' || addressType === 'ipV6') setIpAddress(address);
     else setIpAddress(undefined);
 
@@ -165,28 +180,39 @@ const useJobs = (address: string, addressType: AddressType, jobs: JobSpec[]) => 
         skipJob(job, skipReason(job));
         return;
       }
-      if (job.needsIp) return;
+      // Streamed jobs and IP-jobs wait until the IP is known/known-failed
+      if (job.needsIp || job.streamed) return;
       runJob(job);
     });
 
     return () => {
       Object.values(controllers.current).forEach((c) => c.abort());
       controllers.current = {};
+      scanController.current.abort();
     };
   }, [address, addressType, jobs, runJob, skipJob, eligible, skipReason]);
 
-  // Fire IP-dependent jobs the moment we have an IP, but only once each
+  // Fire IP-dependent and streamed jobs once the IP is known (or known-failed).
+  // The shared /api/scan stream only starts once we know the IP outcome, so
+  // ip-keyed checks get the IP and url-only streamed checks still run on failure.
   useEffect(() => {
-    if (!ipAddress) return;
+    const ipResolved = !!ipAddress || !!ipLookupError;
+    if (!ipResolved) return;
     jobs.forEach((job) => {
-      if (!job.needsIp || fired.current.has(job.id)) return;
+      if (fired.current.has(job.id)) return;
+      // ip-keyed jobs require the actual IP; url-only streamed jobs may run on failure
+      if (job.needsIp) {
+        if (!ipAddress) return;
+      } else if (!job.streamed) {
+        return;
+      }
       if (!eligible(job)) {
         skipJob(job, skipReason(job));
         return;
       }
       runJob(job, ipAddress);
     });
-  }, [ipAddress, jobs, runJob, skipJob, eligible, skipReason]);
+  }, [ipAddress, ipLookupError, jobs, runJob, skipJob, eligible, skipReason]);
 
   // Promote any card whose fallback resolves after the primary failed
   useEffect(() => {
@@ -233,7 +259,8 @@ const useJobs = (address: string, addressType: AddressType, jobs: JobSpec[]) => 
       if (state[cardId]?.state === 'loading') return;
       const job = jobs.find((j) => j.cards.some((c) => c.id === cardId));
       if (!job) return;
-      runJob(job, ipAddress);
+      // Streamed jobs manually retry via the old single-endpoint path (one request)
+      runJob(job, ipAddress, !!job.retryFetcher);
     },
     [jobs, runJob, state, ipAddress],
   );

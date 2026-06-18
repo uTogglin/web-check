@@ -1,5 +1,6 @@
 import { parseJson } from 'client/utils/parse-json';
 import { getApiAuthHeaders, clearApiAuth } from 'client/utils/api-auth';
+import { subscribeToScan } from 'client/utils/scan-stream';
 import { getLocation, parseShodanResults } from 'client/utils/result-processor';
 import {
   clientGetIp,
@@ -76,6 +77,24 @@ const fetchAndProcess =
     });
     if (res.status === 403) clearApiAuth(); // session may have expired; force re-solve next time
     const raw = await parseJson(res);
+    return raw?.error ? raw : process(raw);
+  };
+
+// Build a fetcher that reads a check's body from the shared /api/scan stream
+const fromStream =
+  (check: string, process: (raw: any) => any = (r) => r) =>
+  async (ctx: JobContext) => {
+    const raw = await subscribeToScan(
+      {
+        api: ctx.api,
+        address: ctx.address,
+        ipAddress: ctx.ipAddress,
+        scanKey: ctx.scanKey,
+        scanSignal: ctx.scanSignal,
+      },
+      check,
+    );
+    if (raw?.status === 403) clearApiAuth(); // not expected from stream, but keep parity
     return raw?.error ? raw : process(raw);
   };
 
@@ -167,7 +186,9 @@ export const jobs: JobSpec[] = [
     id: 'ssl',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('ssl', 'SSL Certificate', ['server', 'security'], SslCertCard)],
-    fetcher: fetchAndProcess('ssl?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('ssl'),
+    retryFetcher: fetchAndProcess('ssl?url=${url}'),
   },
   {
     id: 'whois',
@@ -176,19 +197,28 @@ export const jobs: JobSpec[] = [
       card('domain', 'Domain Whois', ['server'], DomainLookup),
       card('whois', 'Domain Info', ['server'], WhoIsCard),
     ],
+    // RDAP runs in-browser, but the fallback rides the shared /api/scan stream.
+    // Mark streamed so it fires only once the IP outcome is known — otherwise an
+    // early RDAP-miss could open the stream before the IP is resolved, sending
+    // the ip-keyed checks (shodan/ports/asn/ip-whois) with no IP.
+    streamed: true,
     fetcher: clientWhois,
   },
   {
     id: 'quality',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('quality', 'Quality Summary', ['client'], LighthouseCard)],
-    fetcher: fetchAndRetry('quality?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('quality'),
+    retryFetcher: fetchAndRetry('quality?url=${url}'),
   },
   {
     id: 'tech-stack',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('tech-stack', 'Tech Stack', ['client', 'meta'], TechStackCard)],
-    fetcher: fetchAndProcess('tech-stack?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('tech-stack'),
+    retryFetcher: fetchAndProcess('tech-stack?url=${url}'),
   },
   {
     id: 'shodan',
@@ -197,19 +227,25 @@ export const jobs: JobSpec[] = [
       card('hosts', 'Host Names', ['server'], HostNamesCard, { pick: at('hostnames') }),
       card('server-info', 'Server Info', ['server'], ServerInfoCard, { pick: at('serverInfo') }),
     ],
-    fetcher: fetchAndProcess('shodan?url=${ip}', parseShodanResults),
+    streamed: true,
+    fetcher: fromStream('shodan', parseShodanResults),
+    retryFetcher: fetchAndProcess('shodan?url=${ip}', parseShodanResults),
   },
   {
     id: 'cookies',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('cookies', 'Cookies', ['client', 'security'], CookiesCard)],
-    fetcher: fetchAndProcess('cookies?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('cookies'),
+    retryFetcher: fetchAndProcess('cookies?url=${url}'),
   },
   {
     id: 'headers',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('headers', 'Headers', ['client', 'security'], HeadersCard)],
-    fetcher: fetchAndProcess('headers?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('headers'),
+    retryFetcher: fetchAndProcess('headers?url=${url}'),
   },
   {
     id: 'dns',
@@ -221,13 +257,17 @@ export const jobs: JobSpec[] = [
     id: 'http-security',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('http-security', 'HTTP Security', ['security'], HttpSecurityCard)],
-    fetcher: fetchAndProcess('http-security?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('http-security'),
+    retryFetcher: fetchAndProcess('http-security?url=${url}'),
   },
   {
     id: 'tls-connection',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('tls-connection', 'TLS Connection', ['server', 'security'], TlsConnectionCard)],
-    fetcher: fetchAndProcess('tls-connection?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('tls-connection'),
+    retryFetcher: fetchAndProcess('tls-connection?url=${url}'),
   },
   {
     id: 'tls-labs',
@@ -236,37 +276,49 @@ export const jobs: JobSpec[] = [
       card('tls-security-audit', 'TLS Security Audit', ['security'], TlsSecurityAuditCard),
       card('tls-client-compat', 'TLS Client Compatibility', ['security'], TlsClientCompatCard),
     ],
-    fetcher: fetchAndPoll('tls-labs?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('tls-labs'),
+    retryFetcher: fetchAndPoll('tls-labs?url=${url}'),
   },
   {
     id: 'subdomains',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('subdomains', 'Subdomains', ['server', 'meta'], SubdomainsCard)],
-    fetcher: fetchAndRetry('subdomains?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('subdomains'),
+    retryFetcher: fetchAndRetry('subdomains?url=${url}'),
   },
   {
     id: 'trace-route',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('trace-route', 'Trace Route', ['server'], TraceRouteCard)],
-    fetcher: fetchAndProcess('trace-route?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('trace-route'),
+    retryFetcher: fetchAndProcess('trace-route?url=${url}'),
   },
   {
     id: 'security-txt',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('security-txt', 'Security.Txt', ['security'], SecurityTxtCard)],
-    fetcher: fetchAndProcess('security-txt?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('security-txt'),
+    retryFetcher: fetchAndProcess('security-txt?url=${url}'),
   },
   {
     id: 'dns-server',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('dns-server', 'Server Info', ['server'], DnsServerCard)],
-    fetcher: fetchAndProcess('dns-server?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('dns-server'),
+    retryFetcher: fetchAndProcess('dns-server?url=${url}'),
   },
   {
     id: 'firewall',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('firewall', 'Firewall', ['server', 'security'], FirewallCard)],
-    fetcher: fetchAndProcess('firewall?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('firewall'),
+    retryFetcher: fetchAndProcess('firewall?url=${url}'),
   },
   {
     id: 'dnssec',
@@ -286,31 +338,41 @@ export const jobs: JobSpec[] = [
     cards: [
       card('cert-transparency', 'Certificate Transparency', ['security', 'meta'], CertTransparencyCard),
     ],
-    fetcher: fetchAndRetry('cert-transparency?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('cert-transparency'),
+    retryFetcher: fetchAndRetry('cert-transparency?url=${url}'),
   },
   {
     id: 'email-security',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('email-security', 'Email Security', ['security', 'server'], EmailSecurityCard)],
-    fetcher: fetchAndProcess('email-security?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('email-security'),
+    retryFetcher: fetchAndProcess('email-security?url=${url}'),
   },
   {
     id: 'third-party',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('third-party', 'Third-Party Trackers', ['client', 'security'], ThirdPartyCard)],
-    fetcher: fetchAndProcess('third-party?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('third-party'),
+    retryFetcher: fetchAndProcess('third-party?url=${url}'),
   },
   {
     id: 'hsts',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('hsts', 'HSTS Check', ['security'], HstsCard)],
-    fetcher: fetchAndProcess('hsts?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('hsts'),
+    retryFetcher: fetchAndProcess('hsts?url=${url}'),
   },
   {
     id: 'threats',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('threats', 'Threats', ['security'], ThreatsCard)],
-    fetcher: fetchAndProcess('threats?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('threats'),
+    retryFetcher: fetchAndProcess('threats?url=${url}'),
   },
   {
     id: 'mail-config',
@@ -322,61 +384,81 @@ export const jobs: JobSpec[] = [
     id: 'archives',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('archives', 'Archive History', ['meta'], ArchivesCard)],
-    fetcher: fetchAndRetry('archives?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('archives'),
+    retryFetcher: fetchAndRetry('archives?url=${url}'),
   },
   {
     id: 'rank',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('rank', 'Global Ranking', ['meta'], RankCard)],
-    fetcher: fetchAndProcess('rank?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('rank'),
+    retryFetcher: fetchAndProcess('rank?url=${url}'),
   },
   {
     id: 'redirects',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('redirects', 'Redirects', ['meta'], RedirectsCard)],
-    fetcher: fetchAndProcess('redirects?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('redirects'),
+    retryFetcher: fetchAndProcess('redirects?url=${url}'),
   },
   {
     id: 'linked-pages',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('linked-pages', 'Linked Pages', ['client', 'meta'], ContentLinksCard)],
-    fetcher: fetchAndProcess('linked-pages?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('linked-pages'),
+    retryFetcher: fetchAndProcess('linked-pages?url=${url}'),
   },
   {
     id: 'robots-txt',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('robots-txt', 'Crawl Rules', ['meta'], RobotsTxtCard)],
-    fetcher: fetchAndProcess('robots-txt?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('robots-txt'),
+    retryFetcher: fetchAndProcess('robots-txt?url=${url}'),
   },
   {
     id: 'status',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('status', 'Server Status', ['server'], ServerStatusCard)],
-    fetcher: fetchAndProcess('status?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('status'),
+    retryFetcher: fetchAndProcess('status?url=${url}'),
   },
   {
     id: 'ports',
     needsIp: true,
     cards: [card('ports', 'Open Ports', ['server'], OpenPortsCard)],
-    fetcher: fetchAndProcess('ports?url=${ip}'),
+    streamed: true,
+    fetcher: fromStream('ports'),
+    retryFetcher: fetchAndProcess('ports?url=${ip}'),
   },
   {
     id: 'ip-whois',
     needsIp: true,
     cards: [card('ip-whois', 'IP WHOIS', ['server', 'meta'], IpWhoisCard)],
-    fetcher: fetchAndRetry('ip-whois?url=${ip}'),
+    streamed: true,
+    fetcher: fromStream('ip-whois'),
+    retryFetcher: fetchAndRetry('ip-whois?url=${ip}'),
   },
   {
     id: 'asn',
     needsIp: true,
     cards: [card('asn', 'ASN & Peering', ['server', 'meta'], AsnCard)],
-    fetcher: fetchAndRetry('asn?url=${ip}'),
+    streamed: true,
+    fetcher: fromStream('asn'),
+    retryFetcher: fetchAndRetry('asn?url=${ip}'),
   },
   {
     id: 'org-asns',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('org-asns', 'Organization ASNs', ['server', 'meta'], OrgAsnsCard)],
-    fetcher: fetchAndRetry('org-asns?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('org-asns'),
+    retryFetcher: fetchAndRetry('org-asns?url=${url}'),
   },
   {
     id: 'txt-records',
@@ -388,13 +470,17 @@ export const jobs: JobSpec[] = [
     id: 'block-lists',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('block-lists', 'Block Lists', ['security', 'meta'], BlockListsCard)],
-    fetcher: fetchAndProcess('block-lists?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('block-lists'),
+    retryFetcher: fetchAndProcess('block-lists?url=${url}'),
   },
   {
     id: 'sitemap',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('sitemap', 'Pages', ['meta'], SitemapCard)],
-    fetcher: fetchAndProcess('sitemap?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('sitemap'),
+    retryFetcher: fetchAndProcess('sitemap?url=${url}'),
   },
   {
     id: 'screenshot',
@@ -410,13 +496,17 @@ export const jobs: JobSpec[] = [
     id: 'social-tags',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('social-tags', 'Social Tags', ['client', 'meta'], SocialTagsCard)],
-    fetcher: fetchAndProcess('social-tags?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('social-tags'),
+    retryFetcher: fetchAndProcess('social-tags?url=${url}'),
   },
   {
     id: 'carbon',
     expectedAddressTypes: [...URL_ONLY],
     cards: [card('carbon', 'Carbon Footprint', ['meta'], CarbonFootprintCard)],
-    fetcher: fetchAndProcess('carbon?url=${url}'),
+    streamed: true,
+    fetcher: fromStream('carbon'),
+    retryFetcher: fetchAndProcess('carbon?url=${url}'),
   },
 ];
 

@@ -5,8 +5,7 @@
 // CORS-enabled APIs, so they cost us zero function invocations.
 
 import type { JobContext } from './types';
-import { parseJson } from 'client/utils/parse-json';
-import { getApiAuthHeaders } from 'client/utils/api-auth';
+import { subscribeToScan } from 'client/utils/scan-stream';
 import {
   dohQuery,
   answersOfType,
@@ -342,18 +341,24 @@ const mapRdap = (data: any, fallbackDomain: string) => {
 };
 
 // Server fallback: when the browser can't read RDAP directly (a CORS-less ccTLD
-// server, or no useful data), invoke our endpoint, which runs the full whoiser +
-// RDAP lookup over raw sockets. Only reached on the minority of domains that the
-// fast path can't handle, so the common case still costs zero invocations.
+// server, or no useful data), read the whois result off the shared scan stream,
+// which the backend always streams as a `whois` check (full whoiser + RDAP lookup
+// over raw sockets). Reusing the stream means this fallback rides the scan request
+// we already paid for — no separate /api/whois round-trip — so a scan never costs
+// more than 2 Worker requests, and the RDAP fast path still costs zero.
 const serverWhois = async (ctx: JobContext) => {
   try {
-    const headers = await getApiAuthHeaders();
-    const res = await fetch(`${ctx.api}/whois?url=${encodeURIComponent(ctx.address)}`, {
-      signal: ctx.signal,
-      headers,
-      credentials: 'include', // send the session cookie paired with the token
-    });
-    return await parseJson(res);
+    // The stream body is already the mapped whois object the backend produces.
+    return await subscribeToScan(
+      {
+        api: ctx.api,
+        address: ctx.address,
+        ipAddress: ctx.ipAddress,
+        scanKey: ctx.scanKey,
+        scanSignal: ctx.scanSignal,
+      },
+      'whois',
+    );
   } catch (err) {
     if (isAbort(err)) throw err;
     return { skipped: 'No WHOIS data available for this domain' };
