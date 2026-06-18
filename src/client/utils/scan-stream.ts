@@ -11,6 +11,7 @@
 // the scan aborts.
 
 import { getApiAuthHeaders, clearApiAuth } from 'client/utils/api-auth';
+import { rateLimitMessage } from 'client/utils/parse-json';
 
 export interface ScanStreamCtx {
   api: string;            // base, e.g. "/api"
@@ -118,6 +119,15 @@ const pump = async (scanKey: number, ctx: ScanStreamCtx): Promise<void> => {
   if (res.status === 403) {
     clearApiAuth();
     failScan(scanKey, new Error('Scan auth rejected'));
+    return;
+  }
+
+  // A 429 means the scan was rate-limited (by the edge or the API). Unlike 403
+  // this is not an auth problem, so we keep the session and just surface a clear
+  // message to every check riding this stream. The body is the limiter's notice,
+  // not NDJSON, so we must not fall through to the stream reader below.
+  if (res.status === 429) {
+    failScan(scanKey, new Error(rateLimitMessage(res)));
     return;
   }
 

@@ -8,6 +8,8 @@
 // When PUBLIC_TURNSTILE_SITE_KEY is unset, this is a no-op: getApiAuthHeaders()
 // returns {} and the API is called exactly as before.
 
+import { rateLimitMessage } from 'client/utils/parse-json';
+
 const SITE_KEY = (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string) || '';
 const apiBase = (import.meta.env.PUBLIC_API_ENDPOINT || '/api') as string;
 
@@ -110,6 +112,9 @@ const obtainSessionToken = async (): Promise<string> => {
     // Receive the session cookie the API pairs with the token.
     credentials: 'include',
   });
+  // A rate-limited auth exchange is not a failed challenge — label it as such so
+  // the user isn't told Turnstile rejected them when they've just hit a limit.
+  if (res.status === 429) throw new Error(rateLimitMessage(res));
   if (!res.ok) throw new Error('Could not verify you are human (Turnstile rejected)');
   const data = await res.json();
   if (!data?.token) throw new Error('Auth endpoint returned no session token');
